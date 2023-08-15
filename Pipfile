@@ -13,8 +13,10 @@ matplotlib = "*"
 pydot = "*"
 graphviz = "*"
 tensorrt = "*"
+xlrd = "*"
 
 [dev-packages]
+ipykernel = "*"
 
 [requires]
 python_version = "3.11"

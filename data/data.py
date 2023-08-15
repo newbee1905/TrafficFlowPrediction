@@ -21,28 +21,41 @@ def process_data(train, test, lags):
         y_test: ndarray.
         scaler: StandardScaler.
     """
-    attr = 'Lane 1 Flow (Veh/5 Minutes)'
-    df1 = pd.read_csv(train, encoding='utf-8').fillna(0)
-    df2 = pd.read_csv(test, encoding='utf-8').fillna(0)
+    df = pd.read_excel(train, sheet_name="Data", header=[1])
 
-    # scaler = StandardScaler().fit(df1[attr].values)
-    scaler = MinMaxScaler(feature_range=(0, 1)).fit(df1[attr].values.reshape(-1, 1))
-    flow1 = scaler.transform(df1[attr].values.reshape(-1, 1)).reshape(1, -1)[0]
-    flow2 = scaler.transform(df2[attr].values.reshape(-1, 1)).reshape(1, -1)[0]
+    first_velo_col_pos = df.columns.get_loc("V00")
+    flow_data = df.to_numpy()[:, first_velo_col_pos:]
 
-    train, test = [], []
-    for i in range(lags, len(flow1)):
-        train.append(flow1[i - lags: i + 1])
-    for i in range(lags, len(flow2)):
-        test.append(flow2[i - lags: i + 1])
+    flow_scaler = MinMaxScaler(feature_range=(0, 1)).fit(flow_data)
+    flow_values = flow_scaler.transform(flow_data)
 
+    lat_data = df['NB_LATITUDE'].to_numpy().reshape(-1, 1)
+    long_data = df['NB_LONGITUDE'].to_numpy().reshape(-1, 1)
+
+    lat_scaler = MinMaxScaler(feature_range=(0, 1)).fit(lat_data)
+    long_scaler = MinMaxScaler(feature_range=(0, 1)).fit(long_data)
+
+    lat = lat_scaler.transform(lat_data)
+    long = long_scaler.transform(long_data)
+
+    latlong = np.concatenate((lat, long), axis=1)
+
+    train = []
+    for i in range(0, len(flow_values)):
+        for j in range(96):
+            k = j
+            if k == 95:
+                k = -1
+            # 15 minutes per velo
+            time_of_vel = j * 15 / 24 / 60
+            inputs = np.append([time_of_vel], latlong[i])
+            inputs = np.append(inputs, flow_values[i, k + 1])
+            train.append(inputs)
     train = np.array(train)
-    test = np.array(test)
+
     np.random.shuffle(train)
 
     X_train = train[:, :-1]
     y_train = train[:, -1]
-    X_test = test[:, :-1]
-    y_test = test[:, -1]
 
-    return X_train, y_train, X_test, y_test, scaler
+    return X_train, y_train, None, None, None
