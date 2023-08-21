@@ -76,5 +76,5 @@ def process_data(data: str, lags: int) -> (np.ndarray, np.ndarray, np.ndarray, S
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0, train_size = .75)
 
-    return X_train, y_train, X_test, y_test, flow_scaler 
+    return X_train, y_train, X_test, y_test, flow_scaler, latlong_scaler
 
