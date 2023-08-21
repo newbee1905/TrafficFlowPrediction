@@ -37,7 +37,8 @@ def process_data(data: str, lags: int) -> (np.ndarray, np.ndarray, np.ndarray, S
         y_train (np.ndarray)
         X_test (np.ndarray)
         y_test (np.ndarray)
-        scaler (StandardScaler)
+        flow_scaler (MinMaxScaler)
+        latlong_scaler (MinMaxScaler)
     """
     df = pd.read_excel(data, sheet_name="Data", header=[1])
 

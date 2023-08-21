@@ -92,7 +92,7 @@ def main(argv):
     lag = 4
     config = {"batch": 256, "epochs": 600}
     file = 'data/Scats Data October 2006.xls'
-    X_train, y_train, _, _, _ = process_data(file, lag)
+    X_train, y_train, _, _, _, _ = process_data(file, lag)
 
     if args.model == 'lstm':
         X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], 1))
