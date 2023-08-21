@@ -45,8 +45,12 @@ def process_data(data: str, lags: int) -> (np.ndarray, np.ndarray, np.ndarray, S
     first_velo_col_pos = df.columns.get_loc("V00")
     flow_data = df.to_numpy()[:, first_velo_col_pos:]
 
-    flow_scaler = MinMaxScaler(feature_range=(0, 1)).fit(flow_data)
-    flow_values = flow_scaler.transform(flow_data)
+    # flow_scaler = MinMaxScaler(feature_range=(0, 1)).fit(flow_data)
+    # flow_values = flow_scaler.transform(flow_data)
+
+    flatten_flow_data = flow_data.reshape(-1, 1)
+    flow_scaler = MinMaxScaler(feature_range=(0, 1)).fit(flatten_flow_data)
+    flow_values = flow_scaler.transform(flatten_flow_data)
 
     lat_data = df['NB_LATITUDE'].to_numpy().reshape(-1, 1)
     long_data = df['NB_LONGITUDE'].to_numpy().reshape(-1, 1)
@@ -58,15 +62,17 @@ def process_data(data: str, lags: int) -> (np.ndarray, np.ndarray, np.ndarray, S
     latlong = latlong_scaler.transform(latlong_data)
 
     num_time_steps = 96
-    #
+    
     # 15 minutes per velo
     time_values = np.arange(num_time_steps) * 15 / 24 / 60
-    time_column = np.tile(time_values, len(flow_values)).reshape(-1, 1)
+    time_column = np.tile(time_values, len(flow_data)).reshape(-1, 1)
 
     expanded_latlong = np.repeat(latlong, num_time_steps, axis=0).reshape(-1, 2)
 
-    shifted_flow_values = np.roll(flow_values, -1, axis=1)
-    shifted_flow_column = shifted_flow_values.reshape(-1, 1)
+    # shifted_flow_values = np.roll(flow_values, -1, axis=1)
+    # shifted_flow_column = shifted_flow_values.reshape(-1, 1)
+
+    shifted_flow_column = np.roll(flow_values, -1)
     
     train = np.hstack((time_column, expanded_latlong, shifted_flow_column))
 

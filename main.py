@@ -98,13 +98,13 @@ def main():
     lstm = load_model('model/lstm.h5')
     gru = load_model('model/gru.h5')
     saes = load_model('model/saes.h5')
-    models = [lstm, gru, saes]
+    models = [lstm, gru]
     names = ['LSTM', 'GRU', 'SAEs']
 
     lag = 4
     file = 'data/Scats Data October 2006.xls'
-    _, _, X_test, y_test, scaler = process_data(file, lag)
-    y_test = scaler.inverse_transform(y_test.reshape(-1, 1)).reshape(1, -1)[0]
+    _, _, X_test, y_test, flow_scaler, latlong_scaler = process_data(file, lag)
+    y_test = flow_scaler.inverse_transform(y_test.reshape(-1, 1)).reshape(1, -1)[0]
 
     y_preds = []
     for name, model in zip(names, models):
@@ -115,7 +115,7 @@ def main():
         file = 'images/' + name + '.png'
         plot_model(model, to_file=file, show_shapes=True)
         predicted = model.predict(X_test)
-        predicted = scaler.inverse_transform(predicted.reshape(-1, 1)).reshape(1, -1)[0]
+        predicted = flow_scaler.inverse_transform(predicted.reshape(-1, 1)).reshape(1, -1)[0]
         y_preds.append(predicted[:288])
         print(name)
         eva_regress(y_test, predicted)
