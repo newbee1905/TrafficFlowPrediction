@@ -10,6 +10,7 @@ from data.data import process_data
 from model import model
 from keras.models import Model
 from keras.callbacks import EarlyStopping
+from multiprocessing import cpu_count
 warnings.filterwarnings("ignore")
 
 
@@ -31,7 +32,10 @@ def train_model(model, X_train, y_train, name, config):
         X_train, y_train,
         batch_size=config["batch"],
         epochs=config["epochs"],
-        validation_split=0.05)
+        validation_split=0.05,
+        workers=cpu_count(),
+        use_multiprocessing=True,
+    )
 
     model.save('model/' + name + '.h5')
     df = pd.DataFrame.from_dict(hist.history)
