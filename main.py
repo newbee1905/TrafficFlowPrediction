@@ -102,9 +102,8 @@ def main():
     names = ['LSTM', 'GRU', 'SAEs']
 
     lag = 12
-    file1 = 'data/train.csv'
-    file2 = 'data/test.csv'
-    _, _, X_test, y_test, scaler = process_data(file1, file2, lag)
+    file = 'data/Scats Data October 2006.xls'
+    _, _, X_test, y_test, scaler = process_data(file, lag)
     y_test = scaler.inverse_transform(y_test.reshape(-1, 1)).reshape(1, -1)[0]
 
     y_preds = []
