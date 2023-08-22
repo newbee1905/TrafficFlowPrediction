@@ -90,7 +90,7 @@ def main(argv):
     args = parser.parse_args()
 
     lag = 4
-    config = {"batch": 256, "epochs": 5}
+    config = {"batch": 256, "epochs": 600}
     file = 'data/Scats Data October 2006.xls'
     X_train, y_train, _, _, _, _ = process_data(file, lag)
 
