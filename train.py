@@ -9,9 +9,11 @@ import pandas as pd
 from data.data import process_data
 from model import model
 from keras.models import Model
-from keras.callbacks import EarlyStopping
-from multiprocessing import cpu_count
+from keras.callbacks import EarlyStopping, ReduceLROnPlateau
+from multiprocessing import cpu_count, Process
 warnings.filterwarnings("ignore")
+
+from keras import backend as K
 
 
 def train_model(model, X_train, y_train, name, config):
@@ -27,11 +29,15 @@ def train_model(model, X_train, y_train, name, config):
     """
 
     model.compile(loss="mse", optimizer="rmsprop", metrics=['mape'])
-    # early = EarlyStopping(monitor='val_loss', patience=30, verbose=0, mode='auto')
+    K.set_value(model.optimizer.learning_rate, 0.01)
+    early = EarlyStopping(monitor='val_loss', patience=30, verbose=0, mode='auto')
+    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.2,
+                              patience=30, min_lr=0.001)
     hist = model.fit(
         X_train, y_train,
         batch_size=config["batch"],
         epochs=config["epochs"],
+        callbacks=[early, reduce_lr],
         validation_split=0.05,
         workers=cpu_count(),
         use_multiprocessing=True,
@@ -87,25 +93,40 @@ def main(argv):
         "--model",
         default="lstm",
         help="Model to train.")
+    parser.add_argument(
+        "--all",
+        action='store_true',
+        default=False,
+        help="Train all models.")
     args = parser.parse_args()
 
-    lag = 4
-    config = {"batch": 256, "epochs": 600}
+    lag = 7
+    config = {"batch": 8192, "epochs": 600}
     file = 'data/Scats Data October 2006.xls'
-    X_train, y_train, _, _, _, _ = process_data(file, lag)
+    X_train, y_train, _, _, _ = process_data(file, lag)
 
-    if args.model == 'lstm':
-        X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], 1))
-        m = model.get_lstm([3, 64, 64, 1])
-        train_model(m, X_train, y_train, args.model, config)
-    if args.model == 'gru':
-        X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], 1))
-        m = model.get_gru([3, 64, 64, 1])
-        train_model(m, X_train, y_train, args.model, config)
-    if args.model == 'saes':
-        X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1]))
-        m = model.get_saes([3, 400, 400, 400, 1])
-        train_seas(m, X_train, y_train, args.model, config)
+    if args.all == True:
+            X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], 1))
+            lstm_proc = Process(target=train_model, args=(model.get_lstm([9, 64, 64, 1]), X_train, y_train, "lstm", config,))
+            gru_proc = Process(target=train_model, args=(model.get_gru([9, 64, 64, 1]), X_train, y_train, "gru", config,))
+            lstm_proc.start()
+            gru_proc.start()
+            procs = [lstm_proc, gru_proc]
+            for proc in procs:
+                proc.join()
+    else:
+        if args.model == 'lstm':
+            X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], 1))
+            m = model.get_lstm([9, 64, 64, 1])
+            train_model(m, X_train, y_train, args.model, config)
+        if args.model == 'gru':
+            X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], 1))
+            m = model.get_gru([9, 64, 64, 1])
+            train_model(m, X_train, y_train, args.model, config)
+        if args.model == 'saes':
+            X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1]))
+            m = model.get_saes([9, 400, 400, 400, 1])
+            train_seas(m, X_train, y_train, args.model, config)
 
 
 if __name__ == '__main__':

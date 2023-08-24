@@ -42,46 +42,82 @@ def process_data(data: str, lags: int) -> (np.ndarray, np.ndarray, np.ndarray, S
     """
     df = pd.read_excel(data, sheet_name="Data", header=[1])
 
+    # first_velo_col_pos = df.columns.get_loc("V00")
+    # flow_data = df.to_numpy()[:, first_velo_col_pos:]
+
+    # # flow_scaler = MinMaxScaler(feature_range=(0, 1)).fit(flow_data)
+    # # flow_values = flow_scaler.transform(flow_data)
+
+    # flatten_flow_data = flow_data.reshape(-1, 1)
+    # flow_scaler = MinMaxScaler(feature_range=(0, 1)).fit(flatten_flow_data)
+    # flow_values = flow_scaler.transform(flatten_flow_data)
+
+    # lat_data = df['NB_LATITUDE'].to_numpy().reshape(-1, 1)
+    # long_data = df['NB_LONGITUDE'].to_numpy().reshape(-1, 1)
+
+    # latlong_data = np.concatenate((lat_data, long_data), axis=1)
+
+    # latlong_scaler = MinMaxScaler(feature_range=(0, 1)).fit(latlong_data)
+
+    # latlong = latlong_scaler.transform(latlong_data)
+
+    # num_time_steps = 96
+    
+    # # 15 minutes per velo
+    # time_values = np.arange(num_time_steps) * 15 / 24 / 60
+    # time_column = np.tile(time_values, len(flow_data)).reshape(-1, 1)
+
+    # # time_values = np.array(np.repeat(df['Date'], 96)).reshape(96, -1)
+    # # time_values_diff = np.tile(pd.to_timedelta(np.char.mod('%dmin', (np.arange(96) - 1) * 15)), len(df['Date'])).reshape(96, -1)
+
+    # # time_values += time_values_diff
+
+    # # time_values = time_values.reshape(-1, 1)
+
+    # # time_scaler = MinMaxScaler(feature_range=(0, 1)).fit(time_values)
+    # # time_column = time_scaler.transform(time_values)
+
+    # expanded_latlong = np.repeat(latlong, num_time_steps, axis=0).reshape(-1, 2)
+
+    # # shifted_flow_values = np.roll(flow_values, -1, axis=1)
+    # # shifted_flow_column = shifted_flow_values.reshape(-1, 1)
+
+    # shifted_flow_column = np.roll(flow_values, -1)
+
+    
+    # train = np.hstack((time_column, expanded_latlong, shifted_flow_column))
+
+    # np.random.shuffle(train)
     first_velo_col_pos = df.columns.get_loc("V00")
-    flow_data = df.to_numpy()[:, first_velo_col_pos:]
+    flow_group = np.char.mod("V%02d", np.arange(0, 96))
+    grouped = df.groupby(['NB_LATITUDE', 'NB_LONGITUDE'])[flow_group].apply(lambda x: x.values.tolist())
 
-    # flow_scaler = MinMaxScaler(feature_range=(0, 1)).fit(flow_data)
-    # flow_values = flow_scaler.transform(flow_data)
+    flow_data = grouped.values
+    flow_scaler = np.array(flow_data.max()).max()
 
-    flatten_flow_data = flow_data.reshape(-1, 1)
-    flow_scaler = MinMaxScaler(feature_range=(0, 1)).fit(flatten_flow_data)
-    flow_values = flow_scaler.transform(flatten_flow_data)
+    latlong_data = np.array(grouped.index.to_list())
 
-    lat_data = df['NB_LATITUDE'].to_numpy().reshape(-1, 1)
-    long_data = df['NB_LONGITUDE'].to_numpy().reshape(-1, 1)
 
-    latlong_data = np.concatenate((lat_data, long_data), axis=1)
+    lags = 7
+    train = []
 
-    latlong_scaler = MinMaxScaler(feature_range=(0, 1)).fit(latlong_data)
+    i = 0
+    for flow in grouped.values:
+        flow = np.array(flow, dtype=float).flatten() / flow_scaler
+        indices = np.arange(lags, len(flow))
+        offset = np.arange(-lags, 1)
+        flow = flow[indices[:, np.newaxis] + offset]
+        latlong = np.tile(latlong_data[i], (len(flow), 1))
+        combined_arr = np.hstack((latlong, flow))
+        train.extend(combined_arr)
+        i += 1
 
-    latlong = latlong_scaler.transform(latlong_data)
-
-    num_time_steps = 96
-    
-    # 15 minutes per velo
-    time_values = np.arange(num_time_steps) * 15 / 24 / 60
-    time_column = np.tile(time_values, len(flow_data)).reshape(-1, 1)
-
-    expanded_latlong = np.repeat(latlong, num_time_steps, axis=0).reshape(-1, 2)
-
-    # shifted_flow_values = np.roll(flow_values, -1, axis=1)
-    # shifted_flow_column = shifted_flow_values.reshape(-1, 1)
-
-    shifted_flow_column = np.roll(flow_values, -1)
-    
-    train = np.hstack((time_column, expanded_latlong, shifted_flow_column))
-
-    np.random.shuffle(train)
+    train = np.array(train)
 
     X = train[:, :-1]
     y = train[:, -1]
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0, train_size = .75)
 
-    return X_train, y_train, X_test, y_test, flow_scaler, latlong_scaler
+    return X_train, y_train, X_test, y_test, flow_scaler
 
