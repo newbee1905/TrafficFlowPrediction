@@ -73,7 +73,7 @@ def plot_results(y_true, y_preds, names):
         names: List, Method names.
     """
     d = '2016-10-01 00:00'
-    x = pd.date_range(d, periods=96, freq='5min')
+    x = pd.date_range(d, periods=96, freq='15min')
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
@@ -87,7 +87,7 @@ def plot_results(y_true, y_preds, names):
     plt.xlabel('Time')
     plt.ylabel('Flow')
 
-    date_format = mpl.dates.DateFormatter("%D %H:%M")
+    date_format = mpl.dates.DateFormatter("%H:%M")
     ax.xaxis.set_major_formatter(date_format)
     fig.autofmt_xdate()
 
@@ -105,8 +105,8 @@ def main():
     lag = 7
     file = 'data/Scats Data October 2006.xls'
     _, _, X_test, y_test, flow_scaler = process_data(file, lag)
-    y_test = flow_scaler.inverse_transform(y_test.reshape(-1, 1)).reshape(1, -1)[0]
-    # y_test *= flow_scaler
+    # y_test = flow_scaler.inverse_transform(y_test.reshape(-1, 1)).reshape(1, -1)[0]
+    y_test *= flow_scaler
 
     y_preds = []
     for name, model in zip(names, models):
@@ -117,8 +117,8 @@ def main():
         file = 'images/' + name + '.png'
         plot_model(model, to_file=file, show_shapes=True)
         predicted = model.predict(X_test)
-        predicted = flow_scaler.inverse_transform(predicted.reshape(-1, 1)).reshape(1, -1)[0]
-        # predicted *= flow_scaler
+        # predicted = flow_scaler.inverse_transform(predicted.reshape(-1, 1)).reshape(1, -1)[0]
+        predicted *= flow_scaler
         y_preds.append(predicted[:96])
         print(name)
         eva_regress(y_test, predicted)
