@@ -105,8 +105,8 @@ def main():
     lag = 7
     file = 'data/Scats Data October 2006.xls'
     _, _, X_test, y_test, flow_scaler = process_data(file, lag)
-    y_test = flow_scaler.inverse_transform(y_test.reshape(-1, 1)).reshape(1, -1)[0]
-    # y_test *= flow_scaler
+    # y_test = flow_scaler.inverse_transform(y_test.reshape(-1, 1)).reshape(1, -1)[0]
+    y_test *= flow_scaler
 
     y_preds = []
     for name, model in zip(names, models):
