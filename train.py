@@ -118,7 +118,7 @@ def main(argv):
 
     config = {"batch": args.batch, "epochs": args.epochs}
     file = 'data/Scats Data October 2006.xls'
-    X_train, y_train, _, _, _, _ = process_data(file, args.lags)
+    X_train, y_train, _, _, _, _, _ = process_data(file, args.lags)
 
 	# time, lat, long
     extra_training_data = 2

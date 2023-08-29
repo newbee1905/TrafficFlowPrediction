@@ -128,8 +128,7 @@ def main():
     names = ['LSTM', 'GRU', 'SAEs']
 
     file = 'data/Scats Data October 2006.xls'
-    _, _, X_test, y_test, _, flow_rescaler = process_data(file, args.lags)
-    # y_test = flow_scaler.inverse_transform(y_test.reshape(-1, 1)).reshape(1, -1)[0]
+    _, _, X_test, y_test, _, flow_rescaler, _ = process_data(file, args.lags)
     y_test = np.vectorize(flow_rescaler)(y_test)
 
     periods = args.days * args.hours * 60 // 15
