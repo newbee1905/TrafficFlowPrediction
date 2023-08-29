@@ -16,6 +16,7 @@ tensorrt = "*"
 xlrd = "*"
 nbconvert = "*"
 import-ipynb = "*"
+nvidia-cudnn-cu11 = "==8.6.0.163"
 
 [dev-packages]
 ipykernel = "*"

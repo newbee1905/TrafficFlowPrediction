@@ -104,3 +104,6 @@ model/*.csv
 model/*.h5
 
 output-*.png
+
+_*.ipynb
+**/_*.ipynb

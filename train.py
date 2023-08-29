@@ -10,11 +10,13 @@ from data.data import process_data
 from model import model
 from keras.models import Model
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau
-from multiprocessing import cpu_count, Process
+from multiprocessing import cpu_count, Pool
 warnings.filterwarnings("ignore")
 
 from keras import backend as K
 
+def train(train_model_data):
+    train_model_data[0](*train_model_data[1])
 
 def train_model(model, X_train, y_train, name, config):
     """train
@@ -32,7 +34,7 @@ def train_model(model, X_train, y_train, name, config):
     K.set_value(model.optimizer.learning_rate, 0.01)
     early = EarlyStopping(monitor='val_loss', patience=30, verbose=0, mode='auto')
     reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.2,
-                              patience=30, min_lr=0.001)
+                              patience=15, min_lr=0.001)
     hist = model.fit(
         X_train, y_train,
         batch_size=config["batch"],
@@ -40,8 +42,7 @@ def train_model(model, X_train, y_train, name, config):
         callbacks=[early, reduce_lr],
         validation_split=0.05,
         workers=cpu_count(),
-        use_multiprocessing=True,
-    )
+        use_multiprocessing=True    )
 
     model.save('model/' + name + '.h5')
     df = pd.DataFrame.from_dict(hist.history)
@@ -98,22 +99,41 @@ def main(argv):
         action='store_true',
         default=False,
         help="Train all models.")
+    parser.add_argument(
+        "--lags",
+        type=int,
+        default=7,
+        help="Lags in the model.")
+    parser.add_argument(
+        "--batch",
+        type=int,
+        default=8192,
+        help="Batch for model training.")
+    parser.add_argument(
+        "--epochs",
+        type=int,
+        default=600,
+        help="Epochs for model training.")
     args = parser.parse_args()
 
-    lag = 7
-    config = {"batch": 8192, "epochs": 600}
+    config = {"batch": args.batch, "epochs": args.epochs}
     file = 'data/Scats Data October 2006.xls'
-    X_train, y_train, _, _, _ = process_data(file, lag)
+    X_train, y_train, _, _, _, _ = process_data(file, args.lags)
+
+	# time, lat, long
+    extra_training_data = 2
+    # extra_training_data = 3
 
     if args.all == True:
             X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], 1))
-            lstm_proc = Process(target=train_model, args=(model.get_lstm([9, 64, 64, 1]), X_train, y_train, "lstm", config,))
-            gru_proc = Process(target=train_model, args=(model.get_gru([9, 64, 64, 1]), X_train, y_train, "gru", config,))
-            lstm_proc.start()
-            gru_proc.start()
-            procs = [lstm_proc, gru_proc]
-            for proc in procs:
-                proc.join()
+            pool = Pool(processes=cpu_count())
+            args = [
+                [train_model, (model.get_lstm([args.lags + extra_training_data, 64, 64, 1]), X_train, y_train, "lstm", config,)],
+                [train_model, (model.get_gru([args.lags + extra_training_data, 64, 64, 1]), X_train, y_train, "gru", config,)]
+            ]
+            pool.map(train, args)
+            pool.close()
+            pool.join()
     else:
         if args.model == 'lstm':
             X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], 1))

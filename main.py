@@ -1,6 +1,7 @@
 """
 Traffic Flow Prediction with Neural Networks(SAEs、LSTM、GRU).
 """
+import argparse
 import math
 import warnings
 import numpy as np
@@ -12,6 +13,7 @@ from tensorflow.keras.utils import plot_model
 import sklearn.metrics as metrics
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+from datetime import datetime
 warnings.filterwarnings("ignore")
 
 
@@ -63,7 +65,7 @@ def eva_regress(y_true, y_pred):
     print('r2:%f' % r2)
 
 
-def plot_results(y_true, y_preds, names):
+def plot_results(y_true, y_preds, names, periods):
     """Plot
     Plot the true data and predicted data.
 
@@ -71,9 +73,11 @@ def plot_results(y_true, y_preds, names):
         y_true: List/ndarray, ture data.
         y_pred: List/ndarray, predicted data.
         names: List, Method names.
+        periods: amout of time in the plots
     """
-    d = '2016-10-01 00:00'
-    x = pd.date_range(d, periods=96, freq='15min')
+    d = '2006-10-01 00:00'
+    y_true = y_true[:periods]
+    x = pd.date_range(d, periods=periods, freq='15min')
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
@@ -84,29 +88,51 @@ def plot_results(y_true, y_preds, names):
 
     plt.legend()
     plt.grid(True)
-    plt.xlabel('Time')
+    plt.xlabel('Time of Day')
     plt.ylabel('Flow')
 
     date_format = mpl.dates.DateFormatter("%H:%M")
     ax.xaxis.set_major_formatter(date_format)
     fig.autofmt_xdate()
 
+
+    now = datetime.now()
+    current_time = now.strftime("%m-%d-%Y-%H-%M-%S")
+    plt.savefig(f'output-{current_time}.png', dpi=2400)
+
     plt.show()
-    plt.savefig('output.png', dpi=2400)
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--days",
+        default=1,
+        help="Number of days in the plots.")
+    parser.add_argument(
+        "--hours",
+        action='store_true',
+        default=24,
+        help="Number of hours per day in the plots.")
+    parser.add_argument(
+        "--lags",
+        type=int,
+        default=7,
+        help="Lags in the model.\nPlease use the same one you use for train.py")
+    args = parser.parse_args()
+
     lstm = load_model('model/lstm.h5')
     gru = load_model('model/gru.h5')
     saes = load_model('model/saes.h5')
     models = [lstm, gru]
     names = ['LSTM', 'GRU', 'SAEs']
 
-    lag = 7
     file = 'data/Scats Data October 2006.xls'
-    _, _, X_test, y_test, flow_scaler = process_data(file, lag)
+    _, _, X_test, y_test, _, flow_rescaler = process_data(file, args.lags)
     # y_test = flow_scaler.inverse_transform(y_test.reshape(-1, 1)).reshape(1, -1)[0]
-    y_test *= flow_scaler
+    y_test = np.vectorize(flow_rescaler)(y_test)
+
+    periods = args.days * args.hours * 60 // 15
 
     y_preds = []
     for name, model in zip(names, models):
@@ -117,13 +143,12 @@ def main():
         file = 'images/' + name + '.png'
         plot_model(model, to_file=file, show_shapes=True)
         predicted = model.predict(X_test)
-        # predicted = flow_scaler.inverse_transform(predicted.reshape(-1, 1)).reshape(1, -1)[0]
-        predicted *= flow_scaler
-        y_preds.append(predicted[:96])
+        predicted = np.vectorize(flow_rescaler)(predicted)
+        y_preds.append(predicted[:periods])
         print(name)
         eva_regress(y_test, predicted)
 
-    plot_results(y_test[:96], y_preds, names)
+    plot_results(y_test[:periods], y_preds, names)
 
 
 if __name__ == '__main__':
