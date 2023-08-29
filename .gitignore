@@ -102,3 +102,5 @@ ENV/
 
 model/*.csv
 model/*.h5
+
+output-*.png
