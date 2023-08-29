@@ -37,7 +37,8 @@ def process_data(data: str, lags: int) -> (np.ndarray, np.ndarray, np.ndarray, S
         y_train (np.ndarray)
         X_test (np.ndarray)
         y_test (np.ndarray)
-        flow_scaler (MinMaxScaler)
+        flow_scaler (func)
+        flow_rescaler (func)
         latlong_scaler (MinMaxScaler)
     """
     df = pd.read_excel(data, sheet_name="Data", header=[1])
@@ -57,7 +58,8 @@ def process_data(data: str, lags: int) -> (np.ndarray, np.ndarray, np.ndarray, S
         return x * (flow_max - flow_min) + flow_min
 
     latlong_data = np.array(grouped.index.to_list())
-
+    latlong_scaler = MinMaxScaler(feature_range=(0, 1)).fit(latlong_data.reshape(-1, 1))
+    latlong_data = latlong_scaler.transform(latlong_data.reshape(-1, 1)).reshape(-1, 2)
 
     lags = 7
     train = []
@@ -81,5 +83,5 @@ def process_data(data: str, lags: int) -> (np.ndarray, np.ndarray, np.ndarray, S
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0, train_size = .75)
 
-    return X_train, y_train, X_test, y_test, flow_scaler, flow_rescaler
+    return X_train, y_train, X_test, y_test, flow_scaler, flow_rescaler, latlong_scaler
 
