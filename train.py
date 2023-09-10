@@ -30,7 +30,7 @@ def train_model(model, X_train, y_train, name, config):
         config: Dict, parameter for train.
     """
 
-    model.compile(loss="mse", optimizer="rmsprop", metrics=['mape'])
+    model.compile(loss="mse", optimizer="adam", metrics=['mape'])
     K.set_value(model.optimizer.learning_rate, 0.01)
     early = EarlyStopping(monitor='val_loss', patience=30, verbose=0, mode='auto')
     reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.2,
@@ -72,7 +72,7 @@ def train_seas(models, X_train, y_train, name, config):
             temp = hidden_layer_model.predict(temp)
 
         m = models[i]
-        m.compile(loss="mse", optimizer="rmsprop", metrics=['mape'])
+        m.compile(loss="mse", optimizer="adam", metrics=['mape'])
 
         m.fit(temp, y_train, batch_size=config["batch"],
               epochs=config["epochs"],
