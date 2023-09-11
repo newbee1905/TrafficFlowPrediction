@@ -31,7 +31,6 @@ intersections = {}
 scats_data['Location'] = scats_data['Location'].str.lower()
 
 # Iterate through the data and extract intersection information
-# Iterate through the data and extract intersection information
 for index, row in scats_data.iterrows():
     location = row['Location']
 
