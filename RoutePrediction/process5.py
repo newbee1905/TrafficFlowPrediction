@@ -27,59 +27,70 @@ G = nx.Graph()
 # Create a dictionary to store intersection data
 intersections = {}
 
-# Convert the "Location" column to lowercase before splitting
-scats_data['Location'] = scats_data['Location'].str.lower()
+# Create a dictionary to store road names
+road_nodes = {}
 
 # Iterate through the data and extract intersection information
 for index, row in scats_data.iterrows():
-    location = row['Location']
+    location = row['Location'].lower()  # Convert to lowercase for case insensitivity
 
     # Split the location into road names
     road_names = location.split(" of ")
 
-    # Add the road names as nodes
-    for road in road_names:
-        road_lower = road.lower()
-        if road_lower not in G:
-            G.add_node(road_lower, original_name=road)  # Convert to lowercase and store original case
+    # Handle the case when there's no delimiter "of"
+    if len(road_names) == 1:
+        road_names = location.split("of")
 
-        # Add the road names to the intersections dictionary if not already added
-        if road_lower not in intersections:
-            intersections[road_lower] = {
-                'original_name': road,
-                'latitude': row['NB_LATITUDE'],
-                'longitude': row['NB_LONGITUDE']
-            }
+    # Extract the unique intersection name
+    intersection_name = " of ".join(road_names)
 
-    # Add edges between the road names (representing connections)
-    if len(road_names) > 1:
-        for i in range(len(road_names)):
-            for j in range(i + 1, len(road_names)):
-                road1_lower = road_names[i].lower()
-                road2_lower = road_names[j].lower()
-                if G.has_node(road1_lower) and G.has_node(road2_lower) and not G.has_edge(road1_lower, road2_lower):
-                    lat1, lon1 = intersections[road1_lower]['latitude'], intersections[road1_lower]['longitude']
-                    lat2, lon2 = intersections[road2_lower]['latitude'], intersections[road2_lower]['longitude']
-                    distance = haversine(lat1, lon1, lat2, lon2)  # Use the correct latitudes and longitudes
-                    G.add_edge(road1_lower, road2_lower, weight=distance)
+    # Add the intersection as a node
+    if intersection_name not in G:
+        G.add_node(intersection_name, latitude=row['NB_LATITUDE'], longitude=row['NB_LONGITUDE'])
+    
+    # Add the road names as nodes and store them in the road_nodes dictionary
+    for road_name in road_names:
+        road_name = road_name.strip()  # Remove leading/trailing spaces
+        if road_name not in road_nodes:
+            road_nodes[road_name] = []
+        road_nodes[road_name].append(intersection_name)
+
+# Iterate through the data again to add edges
+for road_name, intersections in road_nodes.items():
+    if len(intersections) > 1:
+        for i in range(len(intersections)):
+            for j in range(i + 1, len(intersections)):
+                intersection1 = intersections[i]
+                intersection2 = intersections[j]
+                if not G.has_edge(intersection1, intersection2) and intersection1 != intersection2:  # Exclude self-loop edges
+                    lat1, lon1 = G.nodes[intersection1]['latitude'], G.nodes[intersection1]['longitude']
+                    lat2, lon2 = G.nodes[intersection2]['latitude'], G.nodes[intersection2]['longitude']
+                    distance = haversine(lat1, lon1, lat2, lon2)
+                    G.add_edge(intersection1, intersection2, weight=distance)
 
 # Debug information
 for node in G.nodes:
     print(f"Node: {node}")
-    print(f"Original Name: {G.nodes[node]['original_name']}")
-    print(f"Latitude: {intersections[node]['latitude']}")
-    print(f"Longitude: {intersections[node]['longitude']}")
+    print(f"Latitude: {G.nodes[node]['latitude']}")
+    print(f"Longitude: {G.nodes[node]['longitude']}")
     print(f"Neighbors: {list(G.neighbors(node))}")
-
 
 print("Number of nodes:", len(G.nodes))
 print("Number of edges:", len(G.edges))
 print("Is the graph connected?", nx.is_connected(G))
 
-# Check the distances between road nodes
-for edge in G.edges(data=True):
-    road1 = edge[0]
-    road2 = edge[1]
-    distance = edge[2]['weight']
-    print(f"Distance between {road1} and {road2}: {distance} km")
+# Find the ideal route between two intersections
+start_intersection = "burwood_rd e of glenferrie_rd"  # Replace with the actual intersection name
+end_intersection = "rathmines_rd w of burke_rd"    # Replace with the actual intersection name
 
+if start_intersection in G and end_intersection in G:
+    shortest_path = nx.shortest_path(G, start_intersection, end_intersection, weight='weight')
+    shortest_distance = nx.shortest_path_length(G, start_intersection, end_intersection, weight='weight')
+    
+    print(f"Shortest path from {start_intersection} to {end_intersection}:")
+    for i in range(len(shortest_path) - 1):
+        print(f"Step {i + 1}: Go from {shortest_path[i]} to {shortest_path[i + 1]}")
+
+    print(f"Total distance: {shortest_distance} km")
+else:
+    print("Start or end intersection not found in the graph.")
