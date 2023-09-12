@@ -1,6 +1,7 @@
-import pandas as pd
-import networkx as nx
-from math import atan2, radians, sin, cos, sqrt
+import pandas as pd # For reading excel data
+import networkx as nx # For building the graph
+from math import atan2, radians, sin, cos, sqrt # For calculating edge length/distance
+import folium as fm # For map visualisation 
 
 def haversine(lat1, lon1, lat2, lon2):
     # Radius of the Earth in kilometers
@@ -94,3 +95,39 @@ if start_intersection in G and end_intersection in G:
     print(f"Total distance: {shortest_distance} km")
 else:
     print("Start or end intersection not found in the graph.")
+
+
+# Map Visualisation 
+
+# Create a folium map centered at the average latitude and longitude of the start and end intersections
+map_center = ((G.nodes[start_intersection]['latitude'] + G.nodes[end_intersection]['latitude']) / 2,
+              (G.nodes[start_intersection]['longitude'] + G.nodes[end_intersection]['longitude']) / 2)
+m = fm.Map(location=map_center, zoom_start=14)
+
+# Add markers for the start and end intersections
+start_marker = fm.Marker(
+    location=(G.nodes[start_intersection]['latitude'], G.nodes[start_intersection]['longitude']),
+    popup=start_intersection,
+    icon=fm.Icon(color='green')
+).add_to(m)
+
+end_marker = fm.Marker(
+    location=(G.nodes[end_intersection]['latitude'], G.nodes[end_intersection]['longitude']),
+    popup=end_intersection,
+    icon=fm.Icon(color='red')
+).add_to(m)
+
+# Create a list of coordinates for the PolyLine representing the route
+route_coordinates = [(G.nodes[node]['latitude'], G.nodes[node]['longitude']) for node in shortest_path]
+
+# Add a PolyLine to the map
+route_line = fm.PolyLine(
+    locations=route_coordinates,
+    color='blue',
+    weight=5,
+    opacity=0.7
+).add_to(m)
+
+# Display the map
+m.save('route_map.html')
+
