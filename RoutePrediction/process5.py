@@ -84,8 +84,8 @@ print("Number of edges:", len(G.edges))
 print("Is the graph connected?", nx.is_connected(G))
 
 # Find the ideal route between two intersections (hardcoded example)
-start_intersection = "burwood_rd e of glenferrie_rd"  # We can modify to be whatever the user selects in the GUI
-end_intersection = "rathmines_rd w of burke_rd"    
+start_intersection = "bridge_rd sw of burwood_rd"  # We can modify to be whatever the user selects in the GUI
+end_intersection = "offramp_eastern_fwy e of bulleen_rd"    
 
 # Routing using Djikstra search method - can add or adjust as required
 if start_intersection in G and end_intersection in G:
@@ -129,6 +129,29 @@ def preprocess_intersection_name(name):
 # Get coordinates for start and end intersections
 start_coordinates = geocode_intersection(start_intersection)
 end_coordinates = geocode_intersection(end_intersection)
+
+# Handle start intersection not found
+if start_coordinates is None:
+    print(f"Geocoding failed for start intersection: {start_intersection}")
+    # Check if start intersection coordinates are available in the graph nodes
+    if start_intersection in G.nodes:
+        node_data = G.nodes[start_intersection]
+        start_coordinates = (node_data['latitude'], node_data['longitude'])
+        print(f"Using coordinates from graph nodes for start intersection: {start_intersection}")
+    else:
+        print(f"No coordinates found for start intersection: {start_intersection}")
+
+# Handle end intersection not found
+if end_coordinates is None:
+    print(f"Geocoding failed for end intersection: {end_intersection}")
+    # Check if end intersection coordinates are available in the graph nodes
+    if end_intersection in G.nodes:
+        node_data = G.nodes[end_intersection]
+        end_coordinates = (node_data['latitude'], node_data['longitude'])
+        print(f"Using coordinates from graph nodes for end intersection: {end_intersection}")
+    else:
+        print(f"No coordinates found for end intersection: {end_intersection}")
+
 
 if start_coordinates and end_coordinates:
     # Create a folium map centered at the average latitude and longitude of the start and end intersections
