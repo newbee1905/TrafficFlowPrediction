@@ -2,7 +2,10 @@ import pandas as pd # For reading excel data
 import networkx as nx # For building the graph
 from math import atan2, radians, sin, cos, sqrt # For calculating edge length/distance
 import folium as fm # For map visualisation 
+import requests
+import re
 
+# Function to calculate length of road segments
 def haversine(lat1, lon1, lat2, lon2):
     # Radius of the Earth in kilometers
     R = 6371
@@ -80,10 +83,11 @@ print("Number of nodes:", len(G.nodes))
 print("Number of edges:", len(G.edges))
 print("Is the graph connected?", nx.is_connected(G))
 
-# Find the ideal route between two intersections
-start_intersection = "burwood_rd e of glenferrie_rd"  # Replace with the actual intersection name
-end_intersection = "rathmines_rd w of burke_rd"    # Replace with the actual intersection name
+# Find the ideal route between two intersections (hardcoded example)
+start_intersection = "burwood_rd e of glenferrie_rd"  # We can modify to be whatever the user selects in the GUI
+end_intersection = "rathmines_rd w of burke_rd"    
 
+# Routing using Djikstra search method - can add or adjust as required
 if start_intersection in G and end_intersection in G:
     shortest_path = nx.shortest_path(G, start_intersection, end_intersection, weight='weight')
     shortest_distance = nx.shortest_path_length(G, start_intersection, end_intersection, weight='weight')
@@ -99,35 +103,94 @@ else:
 
 # Map Visualisation 
 
-# Create a folium map centered at the average latitude and longitude of the start and end intersections
-map_center = ((G.nodes[start_intersection]['latitude'] + G.nodes[end_intersection]['latitude']) / 2,
-              (G.nodes[start_intersection]['longitude'] + G.nodes[end_intersection]['longitude']) / 2)
-m = fm.Map(location=map_center, zoom_start=14)
+# Function to geocode an intersection name into coordinates
+def geocode_intersection(intersection_name):
+    try:
+        # Use Nominatim to geocode the intersection name into coordinates
+        cleaned_name = preprocess_intersection_name(intersection_name)
+        url = f"https://nominatim.openstreetmap.org/search?format=json&q={cleaned_name}"
+        response = requests.get(url)
+        data = response.json()
+        if data:
+            location = data[0]
+            return float(location['lat']), float(location['lon'])
+    except Exception as e:
+        print(f"Error geocoding {intersection_name}: {e}")
+    return None
 
-# Add markers for the start and end intersections
-start_marker = fm.Marker(
-    location=(G.nodes[start_intersection]['latitude'], G.nodes[start_intersection]['longitude']),
-    popup=start_intersection,
-    icon=fm.Icon(color='green')
-).add_to(m)
+# Function to process intersection names to work with openstreetmap
+def preprocess_intersection_name(name):
+    # Use regular expressions to extract road names without "of" and directional indicators
+    cleaned_name = re.sub(r'(\w+)\s?[nsew]\s?of\s?(\w+)', r'\1 \2', name, flags=re.IGNORECASE)
+    print(cleaned_name)
+    return cleaned_name
 
-end_marker = fm.Marker(
-    location=(G.nodes[end_intersection]['latitude'], G.nodes[end_intersection]['longitude']),
-    popup=end_intersection,
-    icon=fm.Icon(color='red')
-).add_to(m)
 
-# Create a list of coordinates for the PolyLine representing the route
-route_coordinates = [(G.nodes[node]['latitude'], G.nodes[node]['longitude']) for node in shortest_path]
+# Get coordinates for start and end intersections
+start_coordinates = geocode_intersection(start_intersection)
+end_coordinates = geocode_intersection(end_intersection)
 
-# Add a PolyLine to the map
-route_line = fm.PolyLine(
-    locations=route_coordinates,
-    color='blue',
-    weight=5,
-    opacity=0.7
-).add_to(m)
+if start_coordinates and end_coordinates:
+    # Create a folium map centered at the average latitude and longitude of the start and end intersections
+    map_center = ((start_coordinates[0] + end_coordinates[0]) / 2, (start_coordinates[1] + end_coordinates[1]) / 2)
+    m = fm.Map(location=map_center, zoom_start=14)
 
-# Display the map
-m.save('route_map.html')
+    # Add markers for the start and end intersections
+    start_marker = fm.Marker(
+        location=start_coordinates,
+        popup=start_intersection,
+        icon=fm.Icon(color='green')
+    ).add_to(m)
+
+    end_marker = fm.Marker(
+        location=end_coordinates,
+        popup=end_intersection,
+        icon=fm.Icon(color='red')
+    ).add_to(m)
+
+    # Create a list to store coordinates for the route, including the start and end intersections
+    route_coordinates = [start_coordinates]
+
+# Add markers for the intersections along the route
+    for i in range(len(shortest_path)):
+        intersection_name = shortest_path[i]
+        intersection_coordinates = geocode_intersection(intersection_name)
+        if intersection_coordinates:
+            # Add the intersection coordinates to the route
+            route_coordinates.append(intersection_coordinates)
+
+            # Create a marker for the intersection
+            intersection_marker = fm.Marker(
+                location=intersection_coordinates,
+                popup=intersection_name,
+                icon=fm.Icon(color='blue')
+            ).add_to(m)
+        else:
+            print(f"Geocoding failed for intersection: {intersection_name}")
+            # If geocoding fails, use the coordinates from the graph nodes instead as fall back
+            if intersection_name in G.nodes:
+                node_data = G.nodes[intersection_name]
+                intersection_coordinates = (node_data['latitude'], node_data['longitude'])
+                route_coordinates.append(intersection_coordinates)
+                # Create a marker for the intersection
+                intersection_marker = fm.Marker(
+                    location=intersection_coordinates,
+                    popup=intersection_name,
+                    icon=fm.Icon(color='blue')
+                ).add_to(m)
+            else:
+                print(f"No coordinates found for intersection: {intersection_name}")
+
+    # Add a PolyLine to visualize the route
+    route_line = fm.PolyLine(
+        locations=route_coordinates,
+        color='blue',
+        weight=5,
+        opacity=0.7
+    ).add_to(m)
+
+    # Display the map
+    m.save('route_map.html')
+else:
+    print("Start or end intersection not found in the geocoding service.")
 
