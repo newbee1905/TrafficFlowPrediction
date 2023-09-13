@@ -124,7 +124,7 @@ def main():
     lstm = load_model('model/lstm.h5')
     gru = load_model('model/gru.h5')
     saes = load_model('model/saes.h5')
-    models = [lstm, gru]
+    models = [lstm, gru, saes]
     names = ['LSTM', 'GRU', 'SAEs']
 
     file = 'data/Scats Data October 2006.xls'
@@ -147,7 +147,7 @@ def main():
         print(name)
         eva_regress(y_test, predicted)
 
-    plot_results(y_test[:periods], y_preds, names)
+    plot_results(y_test[:periods], y_preds, names, periods)
 
 
 if __name__ == '__main__':
