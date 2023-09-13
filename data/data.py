@@ -23,7 +23,7 @@ from sklearn.model_selection import train_test_split
 # In[ ]:
 
 
-def process_data(data: str, lags: int) -> (np.ndarray, np.ndarray, np.ndarray, StandardScaler):
+def process_data(data, lags):
     """
     Process Data
     Reshape and split data into train and test data.
@@ -61,7 +61,6 @@ def process_data(data: str, lags: int) -> (np.ndarray, np.ndarray, np.ndarray, S
     latlong_scaler = MinMaxScaler(feature_range=(0, 1)).fit(latlong_data.reshape(-1, 1))
     latlong_data = latlong_scaler.transform(latlong_data.reshape(-1, 1)).reshape(-1, 2)
 
-    lags = 7
     train = []
 
     i = 0
