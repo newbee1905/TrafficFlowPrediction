@@ -22,6 +22,25 @@ def haversine(lat1, lon1, lat2, lon2):
 
     return distance
 
+# Function to calculate time to travel route
+def calculate_time(distance_km):
+    # Calculate time for traveling the distance at 60 km/h in seconds
+    time_seconds = (distance_km / 60.0) * 60.0 * 60.0
+    
+    # Calculate time for intersections (30 seconds per intersection) in seconds
+    intersection_time_seconds = 30.0
+    
+    # Total time is the sum of travel time and intersection time
+    total_time_seconds = time_seconds + intersection_time_seconds
+    
+    # Convert total time to minutes and seconds
+    total_time_minutes = int(total_time_seconds // 60)
+    total_time_seconds = int(total_time_seconds % 60)
+    
+    return total_time_minutes, total_time_seconds
+
+
+
 # Read the Excel file into a DataFrame
 scats_data = pd.read_excel('Scats Data October 2006.xls', sheet_name='Data', skiprows=1)
 
@@ -93,10 +112,33 @@ if start_intersection in G and end_intersection in G:
     shortest_distance = nx.shortest_path_length(G, start_intersection, end_intersection, weight='weight')
     
     print(f"Shortest path from {start_intersection} to {end_intersection}:")
+    
+    total_time_minutes = 0  # Initialize total time in minutes
+    total_time_seconds = 0  # Initialize total time in seconds
+    
     for i in range(len(shortest_path) - 1):
-        print(f"Step {i + 1}: Go from {shortest_path[i]} to {shortest_path[i + 1]}")
-
-    print(f"Total distance: {shortest_distance} km")
+        intersection1 = shortest_path[i]
+        intersection2 = shortest_path[i + 1]
+        
+        # Get the distance between two intersections
+        distance = G[intersection1][intersection2]['weight']
+        
+        # Calculate the time for this road segment in minutes and seconds
+        segment_time_minutes, segment_time_seconds = calculate_time(distance)
+        
+        # Update the total time
+        total_time_minutes += segment_time_minutes
+        total_time_seconds += segment_time_seconds
+        
+        # Adjust total time if there are more than 59 seconds
+        if total_time_seconds >= 60:
+            total_time_minutes += total_time_seconds // 60
+            total_time_seconds = total_time_seconds % 60
+        
+        print(f"Step {i + 1}: Go from {intersection1} to {intersection2}, Time: {segment_time_minutes} minutes {segment_time_seconds} seconds")
+    
+    print(f"Total distance: {shortest_distance:.2f} km")
+    print(f"Total time: {total_time_minutes} minutes {total_time_seconds} seconds")
 else:
     print("Start or end intersection not found in the graph.")
 
