@@ -106,17 +106,32 @@ def find_closest_nodes_by_scats(start_scats, end_scats, scats_data, G):
         if node_scats == end_scats:
             end_nodes.append(node)
 
+    # Initialize variables to store the selected start and end nodes
+    selected_start_node = None
+    selected_end_node = None
 
-    # Calculate the distance between all combinations of start and end nodes
+    # Iterate over all combinations of start and end nodes
     for start_node in start_nodes:
         for end_node in end_nodes:
-            distance = nx.shortest_path_length(G, start_node, end_node, weight='weight')
-            if distance < min_distance:
-                min_distance = distance
-                selected_start_node = start_node
-                selected_end_node = end_node
+            try:
+                # Attempt to find a path between the current start and end nodes
+                distance = nx.shortest_path_length(G, start_node, end_node, weight='weight')
+
+                # Check if this distance is shorter than the minimum found so far
+                if distance < min_distance:
+                    min_distance = distance
+                    selected_start_node = start_node
+                    selected_end_node = end_node
+            except nx.NetworkXNoPath:
+                # No path found between these nodes, continue to the next combination
+                continue
+
+    if selected_start_node is None or selected_end_node is None:
+        # Print an error message when no connection is found
+        print("Error: No valid path found between start and end nodes.")
 
     return selected_start_node, selected_end_node
+
 
 def visualize_route_on_map(start_intersection, end_intersection, shortest_path, G):
     # Function to geocode an intersection name into coordinates
