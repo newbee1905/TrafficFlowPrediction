@@ -30,26 +30,15 @@ def calculate_route():
     start_scats = int(start_scats_var.get())
     end_scats = int(end_scats_var.get())
 
-    print(f"Start SCATS: {start_scats}")
-    print(f"End SCATS: {end_scats}")
-
     start_intersection = find_intersection_by_scats(start_scats, scats_data)
     end_intersection = find_intersection_by_scats(end_scats, scats_data)
-
-    print(f"Start intersection 1: {start_intersection}")
-    print(f"End intersection 1: {end_intersection}")
 
     # Call the function to find the closest start and end nodes based on SCATS numbers
     start_intersection, end_intersection = find_closest_nodes_by_scats(start_scats, end_scats, scats_data, G)
 
-    print(f"Start intersection 2: {start_intersection}")
-    print(f"End intersection 2: {end_intersection}")
 
     if start_intersection and end_intersection:
         route_info = find_route(start_intersection, end_intersection)
-        
-        print(f"{route_info}")
-
         if route_info:
             result_label.config(text=f"Route from {start_scats} to {end_scats}:\n"
                                      f"Distance: {route_info['shortest_distance']:.2f} km\n"
