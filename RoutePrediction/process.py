@@ -4,7 +4,6 @@ from math import atan2, radians, sin, cos, sqrt # For calculating edge length/di
 import folium as fm # For map visualisation 
 import requests
 import re
-from collections import Counter, defaultdict
 
 
 # Function to calculate length of road segments
