@@ -43,7 +43,6 @@ def calculate_time(distance_km):
 # Function to find route between intersections
 def find_route(start_intersection, end_intersection):
     # Check if start and end intersections are in the graph
-    print("Graph nodes:", list(G.nodes))
     if start_intersection in G and end_intersection in G:
         # Calculate the shortest path and distance
         shortest_path = nx.shortest_path(G, start_intersection, end_intersection, weight='weight')
@@ -92,9 +91,6 @@ def find_closest_nodes_by_scats(start_scats, end_scats, scats_data, G):
     start_scats = start_scats
     end_scats = end_scats
 
-    print("Start scats:", start_scats)
-    print("End scats:", end_scats)
-
     for node in G.nodes:
         print(f"Node: {node}, SCATS Number: {G.nodes[node]['scats_number']}")
 
@@ -109,10 +105,6 @@ def find_closest_nodes_by_scats(start_scats, end_scats, scats_data, G):
         node_scats = G.nodes[node]['scats_number']
         if node_scats == end_scats:
             end_nodes.append(node)
-
-    
-    print("Start nodes:", start_nodes)
-    print("End nodes:", end_nodes)
 
 
     # Calculate the distance between all combinations of start and end nodes
