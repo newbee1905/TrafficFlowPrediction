@@ -45,7 +45,7 @@ def train_model(model, X_train, y_train, name, config):
         X_train, y_train,
         batch_size=config["batch"],
         epochs=config["epochs"],
-        # callbacks=[early, reduce_lr],
+        callbacks=[early, reduce_lr],
         validation_split=0.05,
         workers=cpu_count(),
         use_multiprocessing=True
@@ -166,7 +166,7 @@ def main(argv):
     config = {"batch": args.batch, "epochs": args.epochs}
     file = 'data/Scats Data October 2006.xls'
     df = read_excel_data(file)
-    _X_train, y_train, _, _, _, _ = process_data(df, args.lags)
+    _X_train, y_train, _, _, _, _, _ = process_data(df, args.lags)
 
     # time, lat, long
     extra_training_data = 2

@@ -91,7 +91,7 @@ def process_data(df: pd.DataFrame, lags: int) -> tuple[np.ndarray, np.ndarray, n
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0, train_size=.75)
 
-    return X_train, y_train, X_test, y_test, flow_scaler, flow_rescaler
+    return X_train, y_train, X_test, y_test, flow_scaler, flow_rescaler, latlong_scaler
 
 def process_data_prophet(df: pd.DataFrame):
     first_velo_col_pos = df.columns.get_loc("V00")

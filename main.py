@@ -133,7 +133,7 @@ def main():
 
     file = 'data/Scats Data October 2006.xls'
     df = read_excel_data(file)
-    _, _, X_test, y_test, _, flow_rescaler = process_data(df, args.lags)
+    _, _, X_test, y_test, _, flow_rescaler, _ = process_data(df, args.lags)
     y_test = np.vectorize(flow_rescaler)(y_test)
     _, prophet_test = process_data_prophet(df)
 
