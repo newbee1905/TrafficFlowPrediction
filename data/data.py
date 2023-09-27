@@ -17,6 +17,10 @@ from sklearn.preprocessing import MinMaxScaler
 # Cause we only have one data file
 from sklearn.model_selection import train_test_split
 
+import sys
+sys.path.append("..")
+from utils import scaler, rescaler
+
 
 # # Functions
 
@@ -56,16 +60,15 @@ def process_data(df: pd.DataFrame, lags: int) -> tuple[np.ndarray, np.ndarray, n
     grouped = df.groupby(['NB_LATITUDE', 'NB_LONGITUDE'])[flow_group].apply(lambda x: x.values.tolist())
 
     flow_data = grouped.values
-    flow_data = grouped.values
     flow_max = np.array(flow_data.max()).max()
     flow_min = np.array(flow_data.min()).min()
-    def flow_scaler(x):
-        return (x - flow_min) / (flow_max - flow_min)
 
-    def flow_rescaler(x):
-        return x * (flow_max - flow_min) + flow_min
+    flow_scaler = scaler(flow_min, flow_max)
+    flow_rescaler = rescaler(flow_min, flow_max)
 
     latlong_data = np.array(grouped.index.to_list())
+    latlong_scaler = MinMaxScaler(feature_range=(0, 1)).fit(latlong_data.reshape(-1, 1))
+    latlong_data = latlong_scaler.transform(latlong_data.reshape(-1, 1)).reshape(-1, 2)
 
     train = []
 
@@ -86,7 +89,7 @@ def process_data(df: pd.DataFrame, lags: int) -> tuple[np.ndarray, np.ndarray, n
     X = train[:, :-1]
     y = train[:, -1]
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0, train_size=0.75)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0, train_size=.75)
 
     return X_train, y_train, X_test, y_test, flow_scaler, flow_rescaler
 
