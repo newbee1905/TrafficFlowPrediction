@@ -4,6 +4,7 @@ from math import atan2, radians, sin, cos, sqrt # For calculating edge length/di
 import folium as fm # For map visualisation 
 import requests
 import re
+import json
 
 
 # Function to calculate length of road segments
@@ -23,10 +24,14 @@ def haversine(lat1, lon1, lat2, lon2):
 
     return distance
 
-# Function to calculate time to travel route
-def calculate_time(distance_km):
-    # Calculate time for traveling the distance at 60 km/h in seconds
-    time_seconds = (distance_km / 60.0) * 60.0 * 60.0
+# Function to calculate time to travel route based on distance and traffic flow
+def calculate_time_with_flow(distance_km, traffic_flow):
+    # Adjusted model for traffic flow effect on speed
+    k = 0.00003
+    effective_speed = 60.0 / (1 + k * traffic_flow ** 2)
+    
+    # Calculate time for traveling the distance at the effective speed in seconds
+    time_seconds = (distance_km / effective_speed) * 3600.0
     
     # Calculate time for intersections (30 seconds per intersection) in seconds
     intersection_time_seconds = 30.0
@@ -40,27 +45,31 @@ def calculate_time(distance_km):
     
     return total_time_minutes, total_time_seconds
 
+
 # Function to find route between intersections
-def find_route(start_intersection, end_intersection):
+def find_route(start_intersection, end_intersection, selected_time, selected_model):
     # Check if start and end intersections are in the graph
     if start_intersection in G and end_intersection in G:
-        # Calculate the shortest path and distance
+        # Calculate the shortest path and distance FIRST
         shortest_path = nx.shortest_path(G, start_intersection, end_intersection, weight='weight')
         shortest_distance = nx.shortest_path_length(G, start_intersection, end_intersection, weight='weight')
         
         total_time_minutes = 0
         total_time_seconds = 0
         
-        # Calculate time for each road segment in the shortest path
+        # Calculate time for each road segment considering traffic flow
         for i in range(len(shortest_path) - 1):
             intersection1 = shortest_path[i]
             intersection2 = shortest_path[i + 1]
             
             # Get the distance between two intersections
-            distance = G[intersection1][intersection2]['weight']
+            distance = G[intersection1][intersection2]['distance']  # Note the key change to 'distance'
             
-            # Calculate the time for this road segment in minutes and seconds
-            segment_time_minutes, segment_time_seconds = calculate_time(distance)
+            # Fetch traffic flow prediction from the server
+            traffic_flow = get_traffic_flow(selected_time, intersection1, selected_model)
+            
+            # Calculate the time for this road segment in minutes and seconds considering traffic flow
+            segment_time_minutes, segment_time_seconds = calculate_time_with_flow(distance, traffic_flow)
             
             # Update the total time
             total_time_minutes += segment_time_minutes
@@ -81,6 +90,62 @@ def find_route(start_intersection, end_intersection):
         }
     else:
         return None
+
+    
+# Function to fetch traffic flow prediction from the server
+def get_traffic_flow(selected_time, intersection_name, selected_model):
+    # Convert the model to lowercase
+    selected_model = selected_model.lower()
+
+    # Check if the intersection_name exists in the graph nodes
+    if intersection_name in G.nodes:
+        # Get the node data which contains latitude and longitude
+        node_data = G.nodes[intersection_name]
+        lat = node_data['latitude']
+        lng = node_data['longitude']
+
+        # Define the JSON payload
+        data = {
+            "start_time": selected_time,
+            "lat": lat,  # Use the latitude from node data
+            "lng": lng,  # Use the longitude from node data
+            "model": selected_model  # Use the lowercase model
+        }
+
+        # Convert the data to JSON format
+        json_data = json.dumps(data)
+
+        # Set the URL of your FastAPI server
+        url = "http://127.0.0.1:8000"
+
+        try:
+            # Make a POST request to the server
+            response = requests.post(url, data=json_data, headers={"Content-Type": "application/json"})
+
+            # Check the response
+            if response.status_code == 200:
+                flow_prediction = response.json()
+                print("Flow Prediction:", flow_prediction)
+                return flow_prediction
+            else:
+                # Handle error gracefully
+                print(f"Error: Server responded with status code {response.status_code}. Using default flow prediction of 0.")
+                return 0  # Default value
+
+        except requests.RequestException as e:
+            # Handle request exceptions such as timeouts, connection errors, etc.
+            print(f"Error: {e}. Using default flow prediction of 0.")
+            return 0  # Default value
+
+    else:
+        # Handle the case where the intersection is not found in the graph
+        print(f"Intersection '{intersection_name}' not found in the graph.")
+        return 0  # Default value
+
+
+# Function to calculate edge weight based on distance and traffic flow
+def calculate_weight(distance, traffic_flow):
+    return distance / max(traffic_flow, 1)  # Avoid division by zero
 
 def find_closest_nodes_by_scats(start_scats, end_scats, scats_data, G):
     start_nodes = []
@@ -299,7 +364,5 @@ for road_name, intersections in road_nodes.items():
                     lat1, lon1 = G.nodes[intersection1]['latitude'], G.nodes[intersection1]['longitude']
                     lat2, lon2 = G.nodes[intersection2]['latitude'], G.nodes[intersection2]['longitude']
                     distance = haversine(lat1, lon1, lat2, lon2)
-                    G.add_edge(intersection1, intersection2, weight=distance)
-
-
+                    G.add_edge(intersection1, intersection2, weight=distance, distance=distance)
 
