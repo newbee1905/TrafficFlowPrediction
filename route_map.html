@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    
+        <script>
+            L_NO_TOUCH = false;
+            L_DISABLE_3D = false;
+        </script>
+    
+    <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
+    <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_216fc6c59e1e59c89a117c3a9977ba81 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+        
+</head>
+<body>
+    
+    
+            <div class="folium-map" id="map_216fc6c59e1e59c89a117c3a9977ba81" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_216fc6c59e1e59c89a117c3a9977ba81 = L.map(
+                "map_216fc6c59e1e59c89a117c3a9977ba81",
+                {
+                    center: [-37.83360355, 145.07728795],
+                    crs: L.CRS.EPSG3857,
+                    zoom: 14,
+                    zoomControl: true,
+                    preferCanvas: false,
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_1deaa3bc9e891f4ebca8c25c82d8378e = L.tileLayer(
+                "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {"attribution": "Data by \u0026copy; \u003ca target=\"_blank\" href=\"http://openstreetmap.org\"\u003eOpenStreetMap\u003c/a\u003e, under \u003ca target=\"_blank\" href=\"http://www.openstreetmap.org/copyright\"\u003eODbL\u003c/a\u003e.", "detectRetina": false, "maxNativeZoom": 18, "maxZoom": 18, "minZoom": 0, "noWrap": false, "opacity": 1, "subdomains": "abc", "tms": false}
+            ).addTo(map_216fc6c59e1e59c89a117c3a9977ba81);
+        
+    
+            var marker_2b407c06091cbb1c914bc18b6a34dce3 = L.marker(
+                [-37.8648471, 145.0929059],
+                {}
+            ).addTo(map_216fc6c59e1e59c89a117c3a9977ba81);
+        
+    
+            var icon_344f2db3f2c3eca391d396792824fbbb = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "green", "prefix": "glyphicon"}
+            );
+            marker_2b407c06091cbb1c914bc18b6a34dce3.setIcon(icon_344f2db3f2c3eca391d396792824fbbb);
+        
+    
+        var popup_d17a25c92658de5bf177cc1cc96617fd = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_3a2765baf389693bdad77f8cad5e684e = $(`<div id="html_3a2765baf389693bdad77f8cad5e684e" style="width: 100.0%; height: 100.0%;">high street_rd w of warrigal_rd</div>`)[0];
+                popup_d17a25c92658de5bf177cc1cc96617fd.setContent(html_3a2765baf389693bdad77f8cad5e684e);
+            
+        
+
+        marker_2b407c06091cbb1c914bc18b6a34dce3.bindPopup(popup_d17a25c92658de5bf177cc1cc96617fd)
+        ;
+
+        
+    
+    
+            var marker_40243cc14205c73d1c5748a1515acfa1 = L.marker(
+                [-37.80236, 145.06167],
+                {}
+            ).addTo(map_216fc6c59e1e59c89a117c3a9977ba81);
+        
+    
+            var icon_e97209eced562b3b7412f367144a2598 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "red", "prefix": "glyphicon"}
+            );
+            marker_40243cc14205c73d1c5748a1515acfa1.setIcon(icon_e97209eced562b3b7412f367144a2598);
+        
+    
+        var popup_3f4bd1ae7922a80c2f1f1126df3287fb = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_e8adf1e1f92cb2ecfce035bf8e7b2607 = $(`<div id="html_e8adf1e1f92cb2ecfce035bf8e7b2607" style="width: 100.0%; height: 100.0%;">belmore_rd e of burke_rd</div>`)[0];
+                popup_3f4bd1ae7922a80c2f1f1126df3287fb.setContent(html_e8adf1e1f92cb2ecfce035bf8e7b2607);
+            
+        
+
+        marker_40243cc14205c73d1c5748a1515acfa1.bindPopup(popup_3f4bd1ae7922a80c2f1f1126df3287fb)
+        ;
+
+        
+    
+    
+            var marker_84fd29c1ba64331483d2c7c0c7b5745c = L.marker(
+                [-37.8648471, 145.0929059],
+                {}
+            ).addTo(map_216fc6c59e1e59c89a117c3a9977ba81);
+        
+    
+            var icon_6f140c63b25730a9af739ce59adef2d7 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "blue", "prefix": "glyphicon"}
+            );
+            marker_84fd29c1ba64331483d2c7c0c7b5745c.setIcon(icon_6f140c63b25730a9af739ce59adef2d7);
+        
+    
+        var popup_97f9d935ca247c6cceb23e7b898cab32 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_b3d63d0b4d85066c12dd6deb6291c2bf = $(`<div id="html_b3d63d0b4d85066c12dd6deb6291c2bf" style="width: 100.0%; height: 100.0%;">high street_rd w of warrigal_rd</div>`)[0];
+                popup_97f9d935ca247c6cceb23e7b898cab32.setContent(html_b3d63d0b4d85066c12dd6deb6291c2bf);
+            
+        
+
+        marker_84fd29c1ba64331483d2c7c0c7b5745c.bindPopup(popup_97f9d935ca247c6cceb23e7b898cab32)
+        ;
+
+        
+    
+    
+            var marker_e5e827274db022cc6f863ff68ce94450 = L.marker(
+                [-37.82778, 145.09885],
+                {}
+            ).addTo(map_216fc6c59e1e59c89a117c3a9977ba81);
+        
+    
+            var icon_1b528aec5072f3d3412fbaf852b10d69 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "blue", "prefix": "glyphicon"}
+            );
+            marker_e5e827274db022cc6f863ff68ce94450.setIcon(icon_1b528aec5072f3d3412fbaf852b10d69);
+        
+    
+        var popup_ad112b479f567a6e8d983595b88f1f46 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_dab2338f0ce8b6a760e77750cc9a5e0f = $(`<div id="html_dab2338f0ce8b6a760e77750cc9a5e0f" style="width: 100.0%; height: 100.0%;">canterbury_rd e of warrigal_rd</div>`)[0];
+                popup_ad112b479f567a6e8d983595b88f1f46.setContent(html_dab2338f0ce8b6a760e77750cc9a5e0f);
+            
+        
+
+        marker_e5e827274db022cc6f863ff68ce94450.bindPopup(popup_ad112b479f567a6e8d983595b88f1f46)
+        ;
+
+        
+    
+    
+            var marker_e4f972f23c0f2d7b447f997edab21789 = L.marker(
+                [-37.82535, 145.07827],
+                {}
+            ).addTo(map_216fc6c59e1e59c89a117c3a9977ba81);
+        
+    
+            var icon_317ba98124ed70fa7be3a40d9fa61866 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "blue", "prefix": "glyphicon"}
+            );
+            marker_e4f972f23c0f2d7b447f997edab21789.setIcon(icon_317ba98124ed70fa7be3a40d9fa61866);
+        
+    
+        var popup_707464b7700c0766cf900e2b3dbfcd94 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_31d834e078c6581758438bb74054bbfd = $(`<div id="html_31d834e078c6581758438bb74054bbfd" style="width: 100.0%; height: 100.0%;">canterbury_rd e of balwyn_rd</div>`)[0];
+                popup_707464b7700c0766cf900e2b3dbfcd94.setContent(html_31d834e078c6581758438bb74054bbfd);
+            
+        
+
+        marker_e4f972f23c0f2d7b447f997edab21789.bindPopup(popup_707464b7700c0766cf900e2b3dbfcd94)
+        ;
+
+        
+    
+    
+            var marker_f89e03c7648a602c17c3d479b334d48f = L.marker(
+                [-37.8040696, 145.0831171],
+                {}
+            ).addTo(map_216fc6c59e1e59c89a117c3a9977ba81);
+        
+    
+            var icon_e9d5ac7d37bbbc53e0dd54ad4d6d3fd2 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "blue", "prefix": "glyphicon"}
+            );
+            marker_f89e03c7648a602c17c3d479b334d48f.setIcon(icon_e9d5ac7d37bbbc53e0dd54ad4d6d3fd2);
+        
+    
+        var popup_83eefbcd2bd4d5c7f27b518a7e6ed1f8 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_083e2409f8d39a27b057bd34c558d4d3 = $(`<div id="html_083e2409f8d39a27b057bd34c558d4d3" style="width: 100.0%; height: 100.0%;">belmore_rd e of balwyn_rd</div>`)[0];
+                popup_83eefbcd2bd4d5c7f27b518a7e6ed1f8.setContent(html_083e2409f8d39a27b057bd34c558d4d3);
+            
+        
+
+        marker_f89e03c7648a602c17c3d479b334d48f.bindPopup(popup_83eefbcd2bd4d5c7f27b518a7e6ed1f8)
+        ;
+
+        
+    
+    
+            var marker_3f8eb4311b165da64881a05fe6e5c137 = L.marker(
+                [-37.80236, 145.06167],
+                {}
+            ).addTo(map_216fc6c59e1e59c89a117c3a9977ba81);
+        
+    
+            var icon_55d3345869dec641d2ef13943645e618 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "info-sign", "iconColor": "white", "markerColor": "blue", "prefix": "glyphicon"}
+            );
+            marker_3f8eb4311b165da64881a05fe6e5c137.setIcon(icon_55d3345869dec641d2ef13943645e618);
+        
+    
+        var popup_e838dfbfca61a6e5921dd49da4553249 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_02fa41d4054bce1a54139585c08b555a = $(`<div id="html_02fa41d4054bce1a54139585c08b555a" style="width: 100.0%; height: 100.0%;">belmore_rd e of burke_rd</div>`)[0];
+                popup_e838dfbfca61a6e5921dd49da4553249.setContent(html_02fa41d4054bce1a54139585c08b555a);
+            
+        
+
+        marker_3f8eb4311b165da64881a05fe6e5c137.bindPopup(popup_e838dfbfca61a6e5921dd49da4553249)
+        ;
+
+        
+    
+    
+            var poly_line_30d8da54796bc61417f7855ac8152438 = L.polyline(
+                [[-37.8648471, 145.0929059], [-37.8648471, 145.0929059], [-37.82778, 145.09885], [-37.82535, 145.07827], [-37.8040696, 145.0831171], [-37.80236, 145.06167]],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "blue", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 5}
+            ).addTo(map_216fc6c59e1e59c89a117c3a9977ba81);
+        
+</script>
+</html>

@@ -11,7 +11,8 @@ from keras.models import load_model
 from prophet.serialize import model_from_json
 import json
 # from keras.utils.vis_utils import plot_model
-from tensorflow.keras.utils import plot_model
+# from tensorflow.keras.utils import plot_model
+from keras.utils import plot_model
 import sklearn.metrics as metrics
 import matplotlib as mpl
 import matplotlib.pyplot as plt
