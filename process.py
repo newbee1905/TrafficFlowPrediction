@@ -5,6 +5,7 @@ import folium as fm # For map visualisation
 import requests
 import re
 import json
+import heapq
 
 # Function to calculate length of road segments
 def haversine(lat1, lon1, lat2, lon2):
@@ -44,31 +45,76 @@ def calculate_time_with_flow(distance_km, traffic_flow):
     
     return total_time_minutes, total_time_seconds
 
+
 # Function to add traffic flow consideration to edge weight
-def adjust_edge_weights_with_traffic(G, selected_time, selected_model):
-    for edge in G.edges():
-        intersection1, intersection2 = edge
-        distance = G.edges[edge]['distance']
-        
-        # Get traffic flow from the server/API
-        traffic_flow = get_traffic_flow(selected_time, intersection1, selected_model)
-        
-        # Calculate expected travel time considering traffic flow and distance
-        time_minutes, time_seconds = calculate_time_with_flow(distance, traffic_flow)
-        
-        # Update the weight of the edge with the calculated travel time (in minutes for simplicity)
-        G.edges[edge]['weight'] = time_minutes + time_seconds/60.0
+def adjust_edge_weight_with_traffic(G, edge, traffic_flow):
+    intersection1, intersection2 = edge
+    distance = G.edges[edge]['distance']
+
+    # Calculate expected travel time considering traffic flow and distance
+    time_minutes, time_seconds = calculate_time_with_flow(distance, traffic_flow)
+
+    # Return the weight of the edge with the calculated travel time (in minutes for simplicity)
+    return time_minutes + time_seconds / 60.0
+
+# Dijkstra search to find optimal route route
+def dijkstra_search(G, start, end, selected_time, selected_model):
+    pq = [(0, start, None)]  # Priority queue
+    distances = {node: float('inf') for node in G.nodes} # Distance meaning Weight not KM
+    distances[start] = 0
+    predecessor = {node: None for node in G.nodes}
+    # total_time = 0  # Variable to store total travel time
+
+    while pq:
+        current_distance, current_node, pred_node = heapq.heappop(pq)
+
+        # Only fetch traffic flow and adjust weights when a node is dequeued, not before (To avoid getting traffic flow for every node)
+        if pred_node is not None:
+            # Get the traffic flow from the server/API
+            traffic_flow = get_traffic_flow(selected_time, current_node, selected_model)
+
+            # Adjust edge weight with the traffic flow
+            edge = (pred_node, current_node)
+            adjusted_weight = adjust_edge_weight_with_traffic(G, edge, traffic_flow)
+            # total_time += adjusted_weight  # Accumulate the total travel time
+
+            # Update distance with actual weight considering traffic flow
+            if current_distance + adjusted_weight < distances[current_node]:
+                distances[current_node] = current_distance + adjusted_weight
+                predecessor[current_node] = pred_node
+
+        if current_node == end:
+            break
+
+        for neighbor in G.neighbors(current_node):
+            edge = (current_node, neighbor)
+
+            # Only add the base distance, delay the traffic flow fetch (distance meaning weight not physical distance)
+            distance = current_distance + G[current_node][neighbor]['weight']
+
+            if distance < distances[neighbor]:
+                distances[neighbor] = distance 
+                predecessor[neighbor] = current_node
+                heapq.heappush(pq, (distance, neighbor, current_node))  # Push with predecessor
+
+    # Reconstruct the shortest path from start to end
+    path = []
+    at = end
+    while at is not None:
+        path.append(at)
+        at = predecessor[at]
+    path.reverse()
+
+    return path, distances[end]  # Return the shortest path and the distance
+
 
 
 # Function to find route between intersections
 def find_route(start_intersection, end_intersection, selected_time, selected_model):
-    # Adjust edge weights based on traffic flow before finding the route
-    adjust_edge_weights_with_traffic(G, selected_time, selected_model)
     # Check if start and end intersections are in the graph
     if start_intersection in G and end_intersection in G:
         # Calculate the shortest path and distance FIRST
-        shortest_path = nx.shortest_path(G, start_intersection, end_intersection, weight='weight')
-        shortest_distance = nx.shortest_path_length(G, start_intersection, end_intersection, weight='weight')
+        shortest_path, shortest_distance = dijkstra_search(G, start_intersection, end_intersection, selected_time, selected_model)
         
         total_time_minutes = 0
         total_time_seconds = 0
@@ -79,7 +125,7 @@ def find_route(start_intersection, end_intersection, selected_time, selected_mod
             intersection2 = shortest_path[i + 1]
             
             # Get the distance between two intersections
-            distance = G[intersection1][intersection2]['distance']  # Note the key change to 'distance'
+            distance = G[intersection1][intersection2]['distance'] 
             
             # Fetch traffic flow prediction from the server
             traffic_flow = get_traffic_flow(selected_time, intersection1, selected_model)
@@ -131,7 +177,7 @@ def get_traffic_flow(selected_time, intersection_name, selected_model):
         # Convert the data to JSON format
         json_data = json.dumps(data)
 
-        # Set the URL of FastAPI server
+        # URL of FastAPI server
         url = "http://127.0.0.1:8000"
 
         try:
@@ -144,7 +190,7 @@ def get_traffic_flow(selected_time, intersection_name, selected_model):
                 print("Flow Prediction:", flow_prediction)
                 return flow_prediction
             else:
-                # Handle error gracefully (e.g., return a default flow prediction)
+                # Default flow of 0 in case of error (Disregard flow)
                 print(f"Error: Server responded with status code {response.status_code}. Using default flow prediction of 0.")
                 return 0  # Default value
 
