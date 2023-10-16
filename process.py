@@ -6,7 +6,6 @@ import requests
 import re
 import json
 
-
 # Function to calculate length of road segments
 def haversine(lat1, lon1, lat2, lon2):
     # Radius of the Earth in kilometers
@@ -45,9 +44,26 @@ def calculate_time_with_flow(distance_km, traffic_flow):
     
     return total_time_minutes, total_time_seconds
 
+# Function to add traffic flow consideration to edge weight
+def adjust_edge_weights_with_traffic(G, selected_time, selected_model):
+    for edge in G.edges():
+        intersection1, intersection2 = edge
+        distance = G.edges[edge]['distance']
+        
+        # Get traffic flow from the server/API
+        traffic_flow = get_traffic_flow(selected_time, intersection1, selected_model)
+        
+        # Calculate expected travel time considering traffic flow and distance
+        time_minutes, time_seconds = calculate_time_with_flow(distance, traffic_flow)
+        
+        # Update the weight of the edge with the calculated travel time (in minutes for simplicity)
+        G.edges[edge]['weight'] = time_minutes + time_seconds/60.0
+
 
 # Function to find route between intersections
 def find_route(start_intersection, end_intersection, selected_time, selected_model):
+    # Adjust edge weights based on traffic flow before finding the route
+    adjust_edge_weights_with_traffic(G, selected_time, selected_model)
     # Check if start and end intersections are in the graph
     if start_intersection in G and end_intersection in G:
         # Calculate the shortest path and distance FIRST
@@ -115,7 +131,7 @@ def get_traffic_flow(selected_time, intersection_name, selected_model):
         # Convert the data to JSON format
         json_data = json.dumps(data)
 
-        # Set the URL of your FastAPI server
+        # Set the URL of FastAPI server
         url = "http://127.0.0.1:8000"
 
         try:
