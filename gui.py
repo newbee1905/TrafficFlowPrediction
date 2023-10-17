@@ -11,27 +11,10 @@ scats_data = pd.read_excel('Scats Data October 2006.xls', sheet_name='Data', ski
 def open_map_in_browser():
     webbrowser.open("route_map.html", new=2)
 
-# Function to find the intersection based on the entered SCATS number
-def find_intersection_by_scats(scats_number, scats_data):
-    for index, row in scats_data.iterrows():
-        data_scats_number = row['SCATS Number']
-        if data_scats_number == scats_number:
-            location = row['Location']
-            road_names = location.split(" of ")
-            intersection_name = " of ".join(road_names)
-            print(f"Found intersection for SCATS Number {scats_number}: {intersection_name}")
-            return intersection_name
-
-    print(f"SCATS Number {scats_number} not found.")
-    return None
-
 def calculate_route():
     # Get the entered SCATS numbers as integers
     start_scats = int(start_scats_var.get())
     end_scats = int(end_scats_var.get())
-
-    start_intersection = find_intersection_by_scats(start_scats, scats_data)
-    end_intersection = find_intersection_by_scats(end_scats, scats_data)
 
     # Call the function to find the closest start and end nodes based on SCATS numbers
     start_intersection, end_intersection = find_closest_nodes_by_scats(start_scats, end_scats, scats_data, G)
