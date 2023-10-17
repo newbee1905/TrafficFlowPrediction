@@ -182,6 +182,28 @@ files = [
 colorama = {version = "*", markers = "platform_system == \"Windows\""}
 
 [[package]]
+name = "cmdstanpy"
+version = "1.2.0"
+description = "Python interface to CmdStan"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "cmdstanpy-1.2.0-py3-none-any.whl", hash = "sha256:bbfe7b5fd64be0f559ca6496c3302b696497c1477dd73f106c1c601ea7e0550d"},
+    {file = "cmdstanpy-1.2.0.tar.gz", hash = "sha256:bdf55ab76f9eea01763b8990a56ff55d03e69ec31d9613fdbbe4c452126ff1bb"},
+]
+
+[package.dependencies]
+numpy = ">=1.21"
+pandas = "*"
+stanio = ">=0.3.0,<0.4.0"
+tqdm = "*"
+
+[package.extras]
+all = ["xarray"]
+docs = ["matplotlib", "numpydoc", "sphinx", "sphinx-gallery", "sphinx-rtd-theme"]
+tests = ["flake8", "mypy", "pylint", "pytest", "pytest-cov", "pytest-order", "tqdm", "xarray"]
+
+[[package]]
 name = "colorama"
 version = "0.4.6"
 description = "Cross-platform colored terminal text."
@@ -556,6 +578,20 @@ files = [
 numpy = ">=1.17.3"
 
 [[package]]
+name = "holidays"
+version = "0.35"
+description = "Generate and work with holidays in Python"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "holidays-0.35-py3-none-any.whl", hash = "sha256:3e179ff248f86dee813160c92e2c4babe3bb3c732287499430d1e3ee90c15f16"},
+    {file = "holidays-0.35.tar.gz", hash = "sha256:e62b797ca3ba2366093458cda0cde33d65e7168be8104815b4149afd4ea4a9ed"},
+]
+
+[package.dependencies]
+python-dateutil = "*"
+
+[[package]]
 name = "idna"
 version = "3.4"
 description = "Internationalized Domain Names in Applications (IDNA)"
@@ -565,6 +601,21 @@ files = [
     {file = "idna-3.4-py3-none-any.whl", hash = "sha256:90b77e79eaa3eba6de819a0c442c0b4ceefc341a7a2ab77d7562bf49f425c5c2"},
     {file = "idna-3.4.tar.gz", hash = "sha256:814f528e8dead7d329833b91c5faa87d60bf71824cd12a7530b5526063d02cb4"},
 ]
+
+[[package]]
+name = "importlib-resources"
+version = "6.1.0"
+description = "Read resources from Python packages"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "importlib_resources-6.1.0-py3-none-any.whl", hash = "sha256:aa50258bbfa56d4e33fbd8aa3ef48ded10d1735f11532b8df95388cc6bdb7e83"},
+    {file = "importlib_resources-6.1.0.tar.gz", hash = "sha256:9d48dcccc213325e810fd723e7fbb45ccb39f6cf5c31f00cf2b965f5f10f3cb9"},
+]
+
+[package.extras]
+docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (<7.2.5)", "sphinx (>=3.5)", "sphinx-lint"]
+testing = ["pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-mypy (>=0.9.1)", "pytest-ruff", "zipp (>=3.17)"]
 
 [[package]]
 name = "joblib"
@@ -1068,6 +1119,34 @@ docs = ["furo", "olefile", "sphinx (>=2.4)", "sphinx-copybutton", "sphinx-inline
 tests = ["check-manifest", "coverage", "defusedxml", "markdown2", "olefile", "packaging", "pyroma", "pytest", "pytest-cov", "pytest-timeout"]
 
 [[package]]
+name = "prophet"
+version = "1.1.5"
+description = "Automatic Forecasting Procedure"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "prophet-1.1.5-py3-none-macosx_10_9_x86_64.whl", hash = "sha256:1c522a76ce49264ad140bbebca7d1c7cdc9ebfe718cdcaaf2c289db96e9e03bd"},
+    {file = "prophet-1.1.5-py3-none-macosx_11_0_arm64.whl", hash = "sha256:24e7ce972f95068af7074dbad5846f83485257366b023af44e86716fb438bb0d"},
+    {file = "prophet-1.1.5-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:cd5991a86dc0a86e09da550fb072ade8714dc17741da0231907d972429476a54"},
+    {file = "prophet-1.1.5-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:7761d127a41d3434b83d16f27b41cdc71052c7d98c0d6013a227a0bc55347da9"},
+    {file = "prophet-1.1.5-py3-none-win_amd64.whl", hash = "sha256:337d9cf7728b8d3ef18a8304aa90c079f206aead15d9f0beff87cad8050553ff"},
+    {file = "prophet-1.1.5.tar.gz", hash = "sha256:80973c0b8a22d835bfa9d6665a78ebc63115135eaef0f73b46ee14e9bad3ca1a"},
+]
+
+[package.dependencies]
+cmdstanpy = ">=1.0.4"
+holidays = ">=0.25"
+importlib-resources = "*"
+matplotlib = ">=2.0.0"
+numpy = ">=1.15.4"
+pandas = ">=1.0.4"
+tqdm = ">=4.36.1"
+
+[package.extras]
+dev = ["jupyterlab", "nbconvert", "plotly", "pytest", "setuptools (>=64)", "wheel"]
+parallel = ["dask[dataframe]", "distributed"]
+
+[[package]]
 name = "protobuf"
 version = "4.24.4"
 description = ""
@@ -1407,6 +1486,23 @@ files = [
 ]
 
 [[package]]
+name = "stanio"
+version = "0.3.0"
+description = ""
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "stanio-0.3.0-py3-none-any.whl", hash = "sha256:2d34b5ebe9ad8fcd137437209bf4b53846d88dbe933441aca5d83fd32f9b0c7e"},
+    {file = "stanio-0.3.0.tar.gz", hash = "sha256:0c504ae671b8d526a1da71185ac02a2775508ffe6d3db91f242eac85bcf6046f"},
+]
+
+[package.dependencies]
+numpy = "*"
+
+[package.extras]
+test = ["pandas", "pytest", "pytest-cov"]
+
+[[package]]
 name = "starlette"
 version = "0.27.0"
 description = "The little ASGI library that shines."
@@ -1580,6 +1676,26 @@ files = [
     {file = "threadpoolctl-3.2.0-py3-none-any.whl", hash = "sha256:2b7818516e423bdaebb97c723f86a7c6b0a83d3f3b0970328d66f4d9104dc032"},
     {file = "threadpoolctl-3.2.0.tar.gz", hash = "sha256:c96a0ba3bdddeaca37dc4cc7344aafad41cdb8c313f74fdfe387a867bba93355"},
 ]
+
+[[package]]
+name = "tqdm"
+version = "4.66.1"
+description = "Fast, Extensible Progress Meter"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "tqdm-4.66.1-py3-none-any.whl", hash = "sha256:d302b3c5b53d47bce91fea46679d9c3c6508cf6332229aa1e7d8653723793386"},
+    {file = "tqdm-4.66.1.tar.gz", hash = "sha256:d88e651f9db8d8551a62556d3cff9e3034274ca5d66e93197cf2490e2dcb69c7"},
+]
+
+[package.dependencies]
+colorama = {version = "*", markers = "platform_system == \"Windows\""}
+
+[package.extras]
+dev = ["pytest (>=6)", "pytest-cov", "pytest-timeout", "pytest-xdist"]
+notebook = ["ipywidgets (>=6)"]
+slack = ["slack-sdk"]
+telegram = ["requests"]
 
 [[package]]
 name = "typing-extensions"
@@ -1772,4 +1888,4 @@ test = ["pytest", "pytest-cov"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.12"
-content-hash = "f316deecd993447cf0a6747353fff7247bc0b3bb9aaee590f3d4e5dd44d018bc"
+content-hash = "b333b6c5d49f19a2e277f495bb083370c930b067b02e8167784976f7e95795d7"

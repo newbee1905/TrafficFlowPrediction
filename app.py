@@ -10,7 +10,6 @@ import time
 from utils import scaler, rescaler
 
 import uvicorn
-
 app = FastAPI()
 
 file = 'data/Scats Data October 2006.xls'
