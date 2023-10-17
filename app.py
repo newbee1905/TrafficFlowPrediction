@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 from keras.models import load_model
 from data.data import read_excel_data, process_data
+import time
 
 from utils import scaler, rescaler
 
@@ -61,19 +62,28 @@ models = {
 
 @app.post("/")
 def root(pred: PredTrafficFlow) -> float:
+    start_time = time.time()
     lat, lng = find_closest_value(pred.lat, pred.lng)
     latlong = np.array([lat, lng])
     latlong = latlong_scaler.transform(latlong.reshape(-1, 1)).reshape(-1, 2)
-    flows = gen_fake_flow(grouped[(lat, lng)], pred.start_time)
+    print("--- Getting Lat Long ---\n--- %s seconds ---\n" % (time.time() - start_time))
 
+    start_time = time.time()
+    flows = gen_fake_flow(grouped[(lat, lng)], pred.start_time)
+    print("--- Generating Fake Flows ---\n--- %s seconds ---\n" % (time.time() - start_time))
+
+    start_time = time.time()
     X = np.array([np.append(latlong, np.vectorize(flow_scaler)(flows))])
 
     if pred.model == 'saes':
         X = np.reshape(X, (X.shape[0], X.shape[1]))
     else:
         X = np.reshape(X, (X.shape[0], X.shape[1], 1))
+    print("--- Reshape Flow ---\n--- %s seconds ---\n" % (time.time() - start_time))
 
+    start_time = time.time()
     predict = models[pred.model].predict(X)
     predict = np.vectorize(flow_rescaler)(predict)
+    print("--- Predicting ---\n--- %s seconds ---\n" % (time.time() - start_time))
 
     return predict[0][0]
