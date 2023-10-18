@@ -27,8 +27,11 @@ def calculate_route():
     # Get the selected time
     selected_time = time_dropdown.get()
 
+    # Get the selected algorithm
+    selected_algorithm = algorithm_var.get()
+
     if start_intersection and end_intersection:
-        route_info = find_route(start_intersection, end_intersection, selected_time, selected_model)
+        route_info = find_route(start_intersection, end_intersection, selected_time, selected_model, selected_algorithm)
         if route_info:
             shortest_path = route_info['shortest_path']
             formatted_path = "\n".join([f"{i + 1}. {shortest_path[i]} -> {shortest_path[i + 1]}" for i in range(len(shortest_path) - 1)])
@@ -41,7 +44,7 @@ def calculate_route():
             visualize_route_on_map(start_intersection, end_intersection, route_info['shortest_path'], G)
 
             # Show the "Open Map in Browser" button
-            open_map_button.grid(column=0, row=6, columnspan=2)
+            open_map_button.grid(column=0, row=7, columnspan=2)
         else:
             result_label.config(text="Start or end intersection not found in the graph.")
     else:
@@ -86,33 +89,9 @@ frm.grid(row=0, column=0, sticky=(tk.N, tk.W, tk.E, tk.S))
 frm.columnconfigure(0, minsize=20)  
 frm.columnconfigure(1, minsize=20)  
 
-# Entry field for scats site for volume prediction
-ttk.Label(frm, text="Enter SCATS Number for Traffic Volume:").grid(column=0, row=7, sticky=tk.W)
-scats_var = tk.StringVar()
-scats_entry = ttk.Entry(frm, textvariable=scats_var, width=20)
-scats_entry.grid(column=1, row=7, sticky=(tk.W, tk.E))
 
-# Dropdown for time selection specific to flow data
-ttk.Label(frm, text="Select Time for Volume Prediction:").grid(column=0, row=8, sticky=tk.W)
-flow_time_dropdown = ttk.Combobox(frm, values=time_options, width=20) 
-flow_time_dropdown.grid(column=1, row=8, sticky=tk.W)
-flow_time_dropdown.set("0:00") 
 
-# Dropdown for ML model selection specific to flow data
-ttk.Label(frm, text="Select Model for Predicting Traffic Volume:").grid(column=0, row=9, sticky=tk.W)
-flow_model_options = ["LSTM", "GRU", "SAES"]
-flow_model_var = tk.StringVar()
-flow_model_dropdown = ttk.Combobox(frm, values=flow_model_options, textvariable=flow_model_var, width=20) 
-flow_model_dropdown.grid(column=1, row=9, sticky=tk.W)
-flow_model_dropdown.set("LSTM") 
-
-# Button to get flow data
-get_flow_button = ttk.Button(frm, text="Predict Volume", command=get_flow_data)
-get_flow_button.grid(column=0, row=10, columnspan=2)
-
-# Label to display the flow data
-flow_data_label = ttk.Label(frm, text="")
-flow_data_label.grid(column=0, row=21, columnspan=2, sticky=(tk.W, tk.E))
+# Route prediction
 
 ttk.Label(frm, text="Enter Start SCATS Number:").grid(column=0, row=0, sticky=tk.W)
 
@@ -141,17 +120,57 @@ ml_model_dropdown = ttk.Combobox(frm, values=ml_model_options, textvariable=ml_m
 ml_model_dropdown.grid(column=1, row=3, sticky=tk.W)
 ml_model_dropdown.set("LSTM") 
 
+# Dropdown menu for algorithm selection
+ttk.Label(frm, text="Select Search Algorithm:").grid(column=0, row=4, sticky=tk.W)  
+algorithm_options = ["Dijkstra", "A*"]
+algorithm_var = tk.StringVar()
+algorithm_dropdown = ttk.Combobox(frm, values=algorithm_options, textvariable=algorithm_var, width=20) 
+algorithm_dropdown.grid(column=1, row=4, sticky=tk.W) 
+algorithm_dropdown.set("Dijkstra")  # Default value
+
 # Button to calculate a route
 calculate_button = ttk.Button(frm, text="Calculate Route", command=calculate_route)
-calculate_button.grid(column=0, row=4, columnspan=2)
+calculate_button.grid(column=0, row=5, columnspan=2)
 
 result_label = ttk.Label(frm, text="")
-result_label.grid(column=0, row=5, columnspan=2)
+result_label.grid(column=0, row=6, columnspan=2)
 
 # Button to open the map in a browser (initially hidden)
 open_map_button = ttk.Button(frm, text="Open Map in Browser", command=open_map_in_browser)
-open_map_button.grid(column=0, row=6, columnspan=2)
+open_map_button.grid(column=0, row=7, columnspan=2)
 open_map_button.grid_remove()  # Hide the button initially
+
+
+
+# Volume Prediction
+
+# Entry field for scats site for volume prediction
+ttk.Label(frm, text="Enter SCATS Number for Traffic Volume:").grid(column=0, row=8, sticky=tk.W)
+scats_var = tk.StringVar()
+scats_entry = ttk.Entry(frm, textvariable=scats_var, width=20)
+scats_entry.grid(column=1, row=8, sticky=(tk.W, tk.E))
+
+# Dropdown for time selection specific to flow data
+ttk.Label(frm, text="Select Time for Volume Prediction:").grid(column=0, row=9, sticky=tk.W)
+flow_time_dropdown = ttk.Combobox(frm, values=time_options, width=20) 
+flow_time_dropdown.grid(column=1, row=9, sticky=tk.W)
+flow_time_dropdown.set("0:00") 
+
+# Dropdown for ML model selection specific to flow data
+ttk.Label(frm, text="Select Model for Predicting Traffic Volume:").grid(column=0, row=10, sticky=tk.W)
+flow_model_options = ["LSTM", "GRU", "SAES"]
+flow_model_var = tk.StringVar()
+flow_model_dropdown = ttk.Combobox(frm, values=flow_model_options, textvariable=flow_model_var, width=20) 
+flow_model_dropdown.grid(column=1, row=10, sticky=tk.W)
+flow_model_dropdown.set("LSTM") 
+
+# Button to get flow data
+get_flow_button = ttk.Button(frm, text="Predict Volume", command=get_flow_data)
+get_flow_button.grid(column=0, row=11, columnspan=2)
+
+# Label to display the flow data
+flow_data_label = ttk.Label(frm, text="")
+flow_data_label.grid(column=0, row=21, columnspan=2, sticky=(tk.W, tk.E))
 
 root.mainloop()
 

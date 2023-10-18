@@ -108,13 +108,81 @@ def dijkstra_search(G, start, end, selected_time, selected_model):
     return path, distances[end]  # Return the shortest path and the distance
 
 
+# Straight line Distance Heuristic for A* Search
+def heuristic(node1, node2):
+    # Get the latitude and longitude for both nodes
+    lat1, lon1 = G.nodes[node1]['latitude'], G.nodes[node1]['longitude']
+    lat2, lon2 = G.nodes[node2]['latitude'], G.nodes[node2]['longitude']
+    
+    # Calculate and return the straight-line distance between the two nodes
+    return haversine(lat1, lon1, lat2, lon2)
+
+# A* Search
+def a_star_search(G, start, end, selected_time, selected_model):
+    pq = [(0, start, None)]  # Priority queue
+    g_values = {node: float('inf') for node in G.nodes}  # Distance from start to node
+    g_values[start] = 0
+    f_values = {node: float('inf') for node in G.nodes}  # g + heuristic
+    f_values[start] = heuristic(start, end)
+    predecessor = {node: None for node in G.nodes}
+
+    while pq:
+        current_f_value, current_node, pred_node = heapq.heappop(pq)
+
+        if current_node == end:
+            break
+
+        for neighbor in G.neighbors(current_node):
+            tentative_g_value = g_values[current_node] + G[current_node][neighbor]['weight']
+
+            if tentative_g_value < g_values[neighbor]:
+                predecessor[neighbor] = current_node
+                g_values[neighbor] = tentative_g_value
+                f_value = tentative_g_value + heuristic(neighbor, end)
+                f_values[neighbor] = f_value
+                heapq.heappush(pq, (f_value, neighbor, current_node))  # Push with predecessor
+
+                # Only fetch traffic flow and adjust weights when a node is dequeued, not before
+                if pred_node is not None:
+                    # Get the traffic flow from the server/API
+                    traffic_flow = get_traffic_flow(selected_time, neighbor, selected_model)
+                    
+                    # Adjust edge weight with the traffic flow
+                    edge = (pred_node, current_node)
+                    adjusted_weight = adjust_edge_weight_with_traffic(G, edge, traffic_flow)
+
+                    # Update g_value with actual weight considering traffic flow
+                    if g_values[current_node] + adjusted_weight < g_values[neighbor]:
+                        g_values[neighbor] = g_values[current_node] + adjusted_weight
+                        f_values[neighbor] = g_values[neighbor] + heuristic(neighbor, end)
+                        predecessor[neighbor] = current_node
+                        # Update the priority queue
+                        heapq.heappush(pq, (f_values[neighbor], neighbor, current_node)) 
+
+    # Reconstruct the shortest path from start to end
+    path = []
+    at = end
+    while at is not None:
+        path.append(at)
+        at = predecessor[at]
+    path.reverse()
+
+    return path, g_values[end]  # Return the shortest path and the distance
+
+
 
 # Function to find route between intersections
-def find_route(start_intersection, end_intersection, selected_time, selected_model):
+def find_route(start_intersection, end_intersection, selected_time, selected_model, algorithm_type):
     # Check if start and end intersections are in the graph
     if start_intersection in G and end_intersection in G:
-        # Calculate the shortest path and distance FIRST
-        shortest_path, shortest_distance = dijkstra_search(G, start_intersection, end_intersection, selected_time, selected_model)
+        if algorithm_type == "Dijkstra":
+             # Calculate the shortest path and distance FIRST
+            shortest_path, shortest_distance = dijkstra_search(G, start_intersection, end_intersection, selected_time, selected_model)
+        elif algorithm_type == "A*":
+             # Calculate the shortest path and distance FIRST
+            shortest_path, shortest_distance = a_star_search(G, start_intersection, end_intersection, selected_time, selected_model)
+        else:
+            return None # Error
         
         total_time_minutes = 0
         total_time_seconds = 0
