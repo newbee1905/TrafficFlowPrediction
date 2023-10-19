@@ -1,27 +1,39 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# # Importing Libraries
-# 
+# Importing Libraries
 # We will use numpy, pandas and sklearn scales and data splitter
-
-# In[ ]:
-
-
 import numpy as np
 import pandas as pd
+<<<<<<< Updated upstream
 # Scaling Data
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
+=======
+# Scaling DatMinMaxScalera
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
+>>>>>>> Stashed changes
 
 # Splitting data to train and test
 # Cause we only have one data file
 from sklearn.model_selection import train_test_split
 
+<<<<<<< Updated upstream
 
 # # Functions
 
 # In[ ]:
 
+=======
+import sys
+sys.path.append("..")
+from utils import scaler, rescaler
+from typing import Callable
+
+# Functions
+def read_excel_data(data: str) -> pd.DataFrame:
+    """
+    Read data from an Excel file.
+>>>>>>> Stashed changes
 
 def process_data(data: str, lags: int) -> (np.ndarray, np.ndarray, np.ndarray, StandardScaler):
     """
@@ -120,4 +132,59 @@ def process_data(data: str, lags: int) -> (np.ndarray, np.ndarray, np.ndarray, S
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0, train_size = .75)
 
     return X_train, y_train, X_test, y_test, flow_scaler
+
+def process_data_cnn(df: pd.DataFrame, lags: int, window_size: int) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Process Data
+    Reshape and split data into train and test data.
+
+    Parameters:
+        df (df.DataFram): dataframe of the data
+        lags (int): time lag
+        window_size (int): Size of the CNN window
+
+    Returns:
+        X_train (np.ndarray)
+        y_train (np.ndarray)
+        X_test (np.ndarray)
+        y_test (np.ndarray)
+    """
+
+    flow_group = np.char.mod("V%02d", np.arange(0, 96))
+    grouped = df.groupby(['NB_LATITUDE', 'NB_LONGITUDE'])[flow_group].apply(lambda x: x.values.tolist())
+
+    flow_data = grouped.values
+    flow_max = np.array(flow_data.max()).max()
+    flow_min = np.array(flow_data.min()).min()
+
+    flow_scaler = scaler(flow_min, flow_max)
+    flow_rescaler = rescaler(flow_min, flow_max)
+
+    latlong_data = np.array(grouped.index.to_list())
+    latlong_scaler = MinMaxScaler(feature_range=(0, 1)).fit(latlong_data.reshape(-1, 1))
+    latlong_data = latlong_scaler.transform(latlong_data.reshape(-1, 1)).reshape(-1, 2)
+
+    train = []
+    i = 0
+    for flow in grouped.values:
+        flow = np.array(flow, dtype=float).flatten()
+        flow = np.vectorize(flow_scaler)(flow)
+        indices = np.arange(lags, len(flow) - window_size + 1)
+        offset = np.arange(-lags, 1)
+        flow = flow[indices[:, np.newaxis] + offset]
+        latlong = np.tile(latlong_data[i], (len(flow), 1))
+        combined_arr = np.hstack((latlong, flow))
+        train.extend(combined_arr)
+        i += 1
+
+    train = np.array(train)
+    X = train[:, :-1]
+    y = train[:, -1]
+
+    # Reshape X to be suitable for 1D CNN
+    X = X.reshape(-1, window_size, 7)
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0, train_size=.75)
+
+    return X_train, y_train, X_test, y_test
 

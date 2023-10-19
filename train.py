@@ -10,7 +10,13 @@ from data.data import process_data
 from model import model
 from keras.models import Model
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau
+<<<<<<< Updated upstream
 from multiprocessing import cpu_count, Process
+=======
+import sklearn.metrics as metrics
+from multiprocessing import cpu_count, Pool
+from prophet.serialize import model_to_json
+>>>>>>> Stashed changes
 warnings.filterwarnings("ignore")
 
 from keras import backend as K
@@ -86,6 +92,54 @@ def train_seas(models, X_train, y_train, name, config):
 
     train_model(saes, X_train, y_train, name, config)
 
+<<<<<<< Updated upstream
+=======
+def train_prophet(model, data, name, config):
+    """
+    This function trains a Prophet model on the given data with regressors and saves the model and loss history.
+
+    Args:
+        model (Prophet): The Prophet model to train.
+        data (DataFrame): The time series data to train the model on.
+        regressor_data (DataFrame): The additional regressor data to include.
+        name (str): The name of the model for saving.
+        config (object): Configuration object with parameters like epochs.
+
+    Returns:
+        None
+    """
+    # model.add_regressor('lat')
+    # model.add_regressor('lng')
+    hist = model.fit(data)
+    with open(f'model/{name}.json', 'w') as fout:
+        fout.write(model_to_json(model))  # Save model
+    df = pd.DataFrame.from_dict(hist.history)
+    df.to_csv(
+        f'model/{name}_lost.csv',
+        encoding='utf-8',
+        index=False
+    )
+
+def train_cnn(model, X_train, y_train, name, config):
+    model.compile(loss="mse", optimizer="adam", metrics=['mape'])
+    K.set_value(model.optimizer.learning_rate, 0.01)
+    early = EarlyStopping(monitor='val_loss', patience=30, verbose=0, mode='auto')
+    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=15, min_lr=0.001)
+    hist = model.fit(
+        X_train, y_train,
+        batch_size=config["batch"],
+        epochs=config["epochs"],
+        callbacks=[early, reduce_lr],
+        validation_split=0.05,
+        workers=cpu_count(),
+        use_multiprocessing=True
+    )
+
+    model.save(f'{data_folder}/model/{name}.h5')
+    df = pd.DataFrame.from_dict(hist.history)
+    df.to_csv(f'{data_folder}/model/{name}_loss.csv', encoding='utf-8', index=False)
+
+>>>>>>> Stashed changes
 
 def main(argv):
     parser = argparse.ArgumentParser()
@@ -98,6 +152,24 @@ def main(argv):
         action='store_true',
         default=False,
         help="Train all models.")
+<<<<<<< Updated upstream
+=======
+    parser.add_argument(
+        "--lags",
+        type=int,
+        default=7,
+        help="Lags in the model.")
+    parser.add_argument(
+        "--batch",
+        type=int,
+        default=8192,
+        help="Batch for model training.")
+    parser.add_argument(
+        "--epochs",
+        type=int,
+        default=1800,
+        help="Epochs for model training.")
+>>>>>>> Stashed changes
     args = parser.parse_args()
 
     lag = 7

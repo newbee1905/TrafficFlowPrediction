@@ -1,9 +1,18 @@
 """
 Defination of NN model
 """
+<<<<<<< Updated upstream
 from keras.layers import Dense, Dropout, Activation
 from tensorflow.keras.layers import LSTM, GRU
 from keras.models import Sequential
+=======
+from keras.layers import Dense, Dropout, Activation, Conv1D, MaxPooling1D, Flatten
+from keras.layers import LSTM, GRU
+from keras.models import Sequential, load_model
+from keras.regularizers import l1
+from keras import Input, Model
+from prophet import Prophet
+>>>>>>> Stashed changes
 
 
 def get_lstm(units):
@@ -90,4 +99,27 @@ def get_saes(layers):
 
     models = [sae1, sae2, sae3, saes]
 
+<<<<<<< Updated upstream
     return models
+=======
+	return models
+
+def get_cnn(units):
+    """LSTM(Long Short-Term Memory)
+    Build LSTM Model.
+
+    # Arguments
+        units: List(int), number of input, output and hidden units.
+    # Returns
+        model: Model, nn model.
+    """
+
+    model = Sequential()
+    model.add(Conv1D(units[1], kernel_size=3, input_shape=(units[0], 1), activation='relu'))
+    model.add(Conv1D(units[2], kernel_size=3, activation='relu'))
+    model.add(Flatten())
+    model.add(Dropout(0.2))
+    model.add(Dense(units[3], activation='sigmoid'))
+
+    return model
+>>>>>>> Stashed changes

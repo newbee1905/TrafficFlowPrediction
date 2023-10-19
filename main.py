@@ -99,8 +99,16 @@ def main():
     lstm = load_model('model/lstm.h5')
     gru = load_model('model/gru.h5')
     saes = load_model('model/saes.h5')
+<<<<<<< Updated upstream
     models = [lstm, gru]
     names = ['LSTM', 'GRU', 'SAEs']
+=======
+    cnn = load_model(f'{data_folder}/model/cnn.h5')
+    with open('model/prophet.json', 'rb') as fin:
+        prophet = model_from_json(fin.read())
+    models = [lstm, gru, saes, cnn, prophet]
+    names = ['LSTM', 'GRU', 'SAEs', 'CNN', 'Prophet']
+>>>>>>> Stashed changes
 
     lag = 7
     file = 'data/Scats Data October 2006.xls'
@@ -122,6 +130,14 @@ def main():
         y_preds.append(predicted[:96])
         print(name)
         eva_regress(y_test, predicted)
+<<<<<<< Updated upstream
+=======
+        y_preds.append(predicted[:periods])
+    print("Prophet")
+    predicted = prophet.predict(pd.DataFrame(prophet_test, columns=["lat", "lng", "ds", "y"]))
+    eva_regress(prophet_test[:, 3], predicted["yhat"])
+    y_preds.append(predicted["yhat"][:periods])
+>>>>>>> Stashed changes
 
     plot_results(y_test[:96], y_preds, names)
 
