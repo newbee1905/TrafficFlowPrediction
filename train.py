@@ -16,11 +16,6 @@ from multiprocessing import cpu_count, Pool
 from prophet.serialize import model_to_json
 warnings.filterwarnings("ignore")
 
-
-def train(train_model_data):
-    train_model_data[0](*train_model_data[1])
-
-
 def train_model(model, X_train, y_train, name, config):
     """train
     train a single model.
@@ -55,7 +50,7 @@ def train_model(model, X_train, y_train, name, config):
     model.save(f'model/{name}.h5')
     df = pd.DataFrame.from_dict(hist.history)
     df.to_csv(
-        f'model/{name}_lost.csv',
+        f'model/{name}_loss.csv',
         encoding='utf-8',
         index=False
     )
@@ -130,7 +125,7 @@ def train_prophet(model, data, name, config):
         fout.write(model_to_json(model))  # Save model
     df = pd.DataFrame.from_dict(hist.history)
     df.to_csv(
-        f'model/{name}_lost.csv',
+        f'model/{name}_loss.csv',
         encoding='utf-8',
         index=False
     )
@@ -150,9 +145,9 @@ def train_cnn(model, X_train, y_train, name, config):
         use_multiprocessing=True
     )
 
-    model.save(f'{data_folder}/model/{name}.h5')
+    model.save(f'model/{name}.h5')
     df = pd.DataFrame.from_dict(hist.history)
-    df.to_csv(f'{data_folder}/model/{name}_loss.csv', encoding='utf-8', index=False)
+    df.to_csv(f'model/{name}_loss.csv', encoding='utf-8', index=False)
 
 
 def main(argv):
@@ -192,45 +187,39 @@ def main(argv):
     extra_training_data = 2
     # extra_training_data = 3
 
-    if args.all is True:
+    if args.model == 'lstm':
         X_train = np.reshape(
             _X_train,
             (_X_train.shape[0], _X_train.shape[1], 1)
         )
         m = model.get_lstm([args.lags + extra_training_data, 64, 64, 1])
         train_model(m, X_train, y_train, args.model, config)
+    if args.model == 'gru':
+        X_train = np.reshape(
+            _X_train,
+            (_X_train.shape[0], _X_train.shape[1], 1)
+        )
         m = model.get_gru([args.lags + extra_training_data, 64, 64, 1])
         train_model(m, X_train, y_train, args.model, config)
-        X_train = np.reshape(_X_train, (_X_train.shape[0], _X_train.shape[1]))
-        m = model.get_saes([args.lags + extra_training_data, 400, 400, 400, 1])
+    if args.model == 'cnn':
+        X_train = np.reshape(
+            _X_train,
+            (_X_train.shape[0], _X_train.shape[1], 1)
+        )
+        m = model.get_cnn([args.lags + extra_training_data, 64, 64, 1])
+        train_model(m, X_train, y_train, args.model, config)
+    if args.model == 'prophet':
+        _X_train, _  = process_data_prophet(df)
+        # X_train = pd.DataFrame(_X_train, columns=["lat", "lng", "ds", "y"])
+        X_train = pd.DataFrame(_X_train[:, 2:4], columns=["ds", "y"])
+        m = model.get_prophet()
+        train_prophet(m, X_train, args.model, config)
+    if args.model == 'saes':
+        X_train = np.reshape(
+            _X_train, (_X_train.shape[0], _X_train.shape[1]))
+        m = model.get_saes(
+            [args.lags + extra_training_data, 400, 400, 400, 1])
         train_saes(m, X_train, y_train, args.model, config)
-    else:
-        if args.model == 'lstm':
-            X_train = np.reshape(
-                _X_train,
-                (_X_train.shape[0], _X_train.shape[1], 1)
-            )
-            m = model.get_lstm([args.lags + extra_training_data, 64, 64, 1])
-            train_model(m, X_train, y_train, args.model, config)
-        if args.model == 'gru':
-            X_train = np.reshape(
-                _X_train,
-                (_X_train.shape[0], _X_train.shape[1], 1)
-            )
-            m = model.get_gru([args.lags + extra_training_data, 64, 64, 1])
-            train_model(m, X_train, y_train, args.model, config)
-        if args.model == 'prophet':
-            _X_train, _  = process_data_prophet(df)
-            # X_train = pd.DataFrame(_X_train, columns=["lat", "lng", "ds", "y"])
-            X_train = pd.DataFrame(_X_train[:, 2:4], columns=["ds", "y"])
-            m = model.get_prophet()
-            train_prophet(m, X_train, args.model, config)
-        if args.model == 'saes':
-            X_train = np.reshape(
-                _X_train, (_X_train.shape[0], _X_train.shape[1]))
-            m = model.get_saes(
-                [args.lags + extra_training_data, 400, 400, 400, 1])
-            train_saes(m, X_train, y_train, args.model, config)
 
 
 if __name__ == '__main__':

@@ -62,7 +62,7 @@ def _get_sae(inputs, hidden, output):
 
     model = Sequential()
     model.add(Dense(hidden, input_dim=inputs, name='hidden'))
-    model.add(Activation('sigmoid'))
+    model.add(Activation('relu'))
     model.add(Dropout(0.2))
     model.add(Dense(output, activation='sigmoid'))
 
@@ -84,11 +84,11 @@ def get_saes(layers):
 
     saes = Sequential()
     saes.add(Dense(layers[1], input_dim=layers[0], name='hidden1'))
-    saes.add(Activation('sigmoid'))
+    saes.add(Activation('relu'))
     saes.add(Dense(layers[2], name='hidden2'))
-    saes.add(Activation('sigmoid'))
+    saes.add(Activation('relu'))
     saes.add(Dense(layers[3], name='hidden3'))
-    saes.add(Activation('sigmoid'))
+    saes.add(Activation('relu'))
     saes.add(Dropout(0.2))
     saes.add(Dense(layers[4], activation='sigmoid'))
 
@@ -114,3 +114,13 @@ def get_cnn(units):
     model.add(Dense(units[3], activation='sigmoid'))
 
     return model
+
+def get_prophet():
+	"""
+	This function creates and returns a Prophet model.
+
+	Returns:
+		Prophet: The Prophet model.
+	"""
+	model = Prophet()
+	return model
