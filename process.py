@@ -205,7 +205,7 @@ def bidirectional_search(G, start, end, selected_time, selected_model):
 
         for neighbor in G.neighbors(current_node):
             # Adjust the weight for the edge
-            traffic_flow = get_traffic_flow(selected_time, neighbor, selected_model)  # assuming this function exists
+            traffic_flow = get_traffic_flow(selected_time, neighbor, selected_model) 
             edge = (current_node, neighbor) if direction == 'forward' else (neighbor, current_node)
             adjusted_weight = adjust_edge_weight_with_traffic(G, edge, traffic_flow)
 
@@ -356,9 +356,6 @@ def find_closest_nodes_by_scats(start_scats, end_scats, scats_data, G):
     start_scats = start_scats
     end_scats = end_scats
 
-    for node in G.nodes:
-        print(f"Node: {node}, SCATS Number: {G.nodes[node]['scats_number']}")
-
     # Find all nodes with the entered start SCATS number
     for node in G.nodes:
         node_scats = G.nodes[node]['scats_number']
@@ -422,7 +419,6 @@ def visualize_route_on_map(start_intersection, end_intersection, shortest_path, 
     def preprocess_intersection_name(name):
         # Use regular expressions to extract road names without "of" and directional indicators
         cleaned_name = re.sub(r'(\w+)\s?[nswe]+[sw]*\s?of\s?(\w+)', r'\1 \2', name, flags=re.IGNORECASE)
-        print(cleaned_name)
         return cleaned_name
 
     # Get coordinates for start and end intersections
