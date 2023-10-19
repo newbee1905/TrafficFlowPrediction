@@ -57,7 +57,7 @@ def adjust_edge_weight_with_traffic(G, edge, traffic_flow):
     # Return the weight of the edge with the calculated travel time (in minutes for simplicity)
     return time_minutes + time_seconds / 60.0
 
-# Dijkstra search to find optimal route route
+# Dijkstra search to find optimal route
 def dijkstra_search(G, start, end, selected_time, selected_model):
     pq = [(0, start, None)]  # Priority queue
     distances = {node: float('inf') for node in G.nodes} # Distance meaning Weight not KM
@@ -169,21 +169,91 @@ def a_star_search(G, start, end, selected_time, selected_model):
 
     return path, g_values[end]  # Return the shortest path and the distance
 
+# Bi-Directional Search Algorithm
+def bidirectional_search(G, start, end, selected_time, selected_model):
+    if start == end:
+        return [start], 0  # The start and end are the same node
+
+    # Initialize the two searches
+    forward_search = {start: (0, None)}  # node: (distance, predecessor)
+    backward_search = {end: (0, None)}  # node: (distance, predecessor)
+    forward_frontier = [(0, start)]  # priority queue for the forward search
+    backward_frontier = [(0, end)]  # priority queue for the backward search
+    intersect_node = None  # to keep track of where the searches meet
+
+    while forward_frontier and backward_frontier:
+        # Choose the frontier with the smallest priority queue to expand
+        if len(forward_frontier) <= len(backward_frontier):
+            current_frontier = forward_frontier
+            current_search = forward_search
+            other_search = backward_search
+            direction = 'forward'
+        else:
+            current_frontier = backward_frontier
+            current_search = backward_search
+            other_search = forward_search
+            direction = 'backward'
+
+        # Pop the node with the shortest distance from the current frontier
+        current_distance, current_node = heapq.heappop(current_frontier)
+
+        if current_node in other_search:
+            # The searches have met
+            intersect_node = current_node
+            # Calculate the total distance at this point
+            total_distance = current_search[current_node][0] + other_search[current_node][0]
+            break
+
+        for neighbor in G.neighbors(current_node):
+            # Adjust the weight for the edge
+            traffic_flow = get_traffic_flow(selected_time, neighbor, selected_model)  # assuming this function exists
+            edge = (current_node, neighbor) if direction == 'forward' else (neighbor, current_node)
+            adjusted_weight = adjust_edge_weight_with_traffic(G, edge, traffic_flow)
+
+            distance = current_distance + adjusted_weight
+
+            if neighbor not in current_search or current_search[neighbor][0] > distance:
+                current_search[neighbor] = (distance, current_node)
+                heapq.heappush(current_frontier, (distance, neighbor))
+
+    if intersect_node is None:
+        return None, float('inf')  # The searches did not meet, so no path exists
+
+    # Reconstruct the path from start to the intersect node
+    path = []
+    at = intersect_node
+    while at is not None:
+        path.append(at)
+        at = forward_search[at][1]
+    path.reverse()
+
+    # Extend the path from the intersect node to the end (excluding the intersect node as it's already added)
+    at = backward_search[intersect_node][1]
+    while at is not None:
+        path.append(at)
+        at = backward_search[at][1]
+
+    return path, total_distance  # Return the full path, total distance
 
 
-# Function to find route between intersections
+
+# Main function to find route between intersections
 def find_route(start_intersection, end_intersection, selected_time, selected_model, algorithm_type):
     # Check if start and end intersections are in the graph
     if start_intersection in G and end_intersection in G:
         if algorithm_type == "Dijkstra":
-             # Calculate the shortest path and distance FIRST
+             # Calculate the shortest path and distance using Dijkstra search
             shortest_path, shortest_distance = dijkstra_search(G, start_intersection, end_intersection, selected_time, selected_model)
         elif algorithm_type == "A*":
-             # Calculate the shortest path and distance FIRST
+             # Calculate the shortest path and distance using A* search
             shortest_path, shortest_distance = a_star_search(G, start_intersection, end_intersection, selected_time, selected_model)
+        elif algorithm_type == "Bi-Directional":
+             # Calculate the shortest path and distance using Bi-Directional search
+            shortest_path, shortest_distance = bidirectional_search(G, start_intersection, end_intersection, selected_time, selected_model)            
         else:
             return None # Error
         
+        # Set time variables to 0
         total_time_minutes = 0
         total_time_seconds = 0
         
@@ -210,6 +280,7 @@ def find_route(start_intersection, end_intersection, selected_time, selected_mod
                 total_time_minutes += total_time_seconds // 60
                 total_time_seconds = total_time_seconds % 60
         
+        # Return all route information to be displayed on the GUI
         return {
             "start_intersection": start_intersection,
             "end_intersection": end_intersection,

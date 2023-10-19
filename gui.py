@@ -35,7 +35,7 @@ def calculate_route():
         if route_info:
             shortest_path = route_info['shortest_path']
             formatted_path = "\n".join([f"{i + 1}. {shortest_path[i]} -> {shortest_path[i + 1]}" for i in range(len(shortest_path) - 1)])
-            result_label.config(text=f"Route from {start_scats} to {end_scats} using {selected_model}:\n"
+            result_label.config(text=f"Route from {start_scats} to {end_scats} using {selected_model} and {selected_algorithm} Search:\n"
                                     f"\nDistance: \n{route_info['shortest_distance']:.2f} km\n"
                                     f"Total Travel Time: \n{route_info['total_time_minutes']} minutes {route_info['total_time_seconds']} seconds\n"
                                     f"\nShortest Path:\n{formatted_path}")
@@ -122,7 +122,7 @@ ml_model_dropdown.set("LSTM")
 
 # Dropdown menu for algorithm selection
 ttk.Label(frm, text="Select Search Algorithm:").grid(column=0, row=4, sticky=tk.W)  
-algorithm_options = ["Dijkstra", "A*"]
+algorithm_options = ["Dijkstra", "A*", "Bi-Directional"]
 algorithm_var = tk.StringVar()
 algorithm_dropdown = ttk.Combobox(frm, values=algorithm_options, textvariable=algorithm_var, width=20) 
 algorithm_dropdown.grid(column=1, row=4, sticky=tk.W) 
