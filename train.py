@@ -130,26 +130,6 @@ def train_prophet(model, data, name, config):
         index=False
     )
 
-def train_cnn(model, X_train, y_train, name, config):
-    model.compile(loss="mse", optimizer="adam", metrics=['mape'])
-    K.set_value(model.optimizer.learning_rate, 0.01)
-    early = EarlyStopping(monitor='val_loss', patience=30, verbose=0, mode='auto')
-    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=15, min_lr=0.001)
-    hist = model.fit(
-        X_train, y_train,
-        batch_size=config["batch"],
-        epochs=config["epochs"],
-        callbacks=[early, reduce_lr],
-        validation_split=0.05,
-        workers=cpu_count(),
-        use_multiprocessing=True
-    )
-
-    model.save(f'model/{name}.h5')
-    df = pd.DataFrame.from_dict(hist.history)
-    df.to_csv(f'model/{name}_loss.csv', encoding='utf-8', index=False)
-
-
 def main(argv):
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -192,14 +172,14 @@ def main(argv):
             _X_train,
             (_X_train.shape[0], _X_train.shape[1], 1)
         )
-        m = model.get_lstm([args.lags + extra_training_data, 64, 64, 1])
+        m = model.get_lstm([args.lags + extra_training_data, 64, 64, 64, 1])
         train_model(m, X_train, y_train, args.model, config)
     if args.model == 'gru':
         X_train = np.reshape(
             _X_train,
             (_X_train.shape[0], _X_train.shape[1], 1)
         )
-        m = model.get_gru([args.lags + extra_training_data, 64, 64, 1])
+        m = model.get_gru([args.lags + extra_training_data, 64, 64, 64, 1])
         train_model(m, X_train, y_train, args.model, config)
     if args.model == 'cnn':
         X_train = np.reshape(

@@ -1,7 +1,7 @@
 """
 Definition of NN model
 """
-from keras.layers import Dense, Dropout, Activation, Conv1D, MaxPooling1D, Flatten
+from keras.layers import Dense, Dropout, Activation, Conv1D, MaxPooling1D, Flatten, BatchNormalization, LeakyReLU
 from keras.layers import LSTM, GRU
 from keras.models import Sequential, load_model
 from keras.models import Model
@@ -22,9 +22,10 @@ def get_lstm(units):
 
     model = Sequential()
     model.add(LSTM(units[1], input_shape=(units[0], 1), return_sequences=True))
-    model.add(LSTM(units[2]))
+    model.add(LSTM(units[2], return_sequences=True))
+    model.add(LSTM(units[3]))
     model.add(Dropout(0.2))
-    model.add(Dense(units[3], activation='sigmoid'))
+    model.add(Dense(units[4], activation="sigmoid"))
 
     return model
 
@@ -41,9 +42,10 @@ def get_gru(units):
 
     model = Sequential()
     model.add(GRU(units[1], input_shape=(units[0], 1), return_sequences=True))
-    model.add(GRU(units[2]))
+    model.add(GRU(units[2], return_sequences=True))
+    model.add(GRU(units[3]))
     model.add(Dropout(0.2))
-    model.add(Dense(units[3], activation='sigmoid'))
+    model.add(Dense(units[4], activation="sigmoid"))
 
     return model
 
@@ -62,6 +64,8 @@ def _get_sae(inputs, hidden, output):
 
     model = Sequential()
     model.add(Dense(hidden, input_dim=inputs, name='hidden'))
+    # model.add(BatchNormalization())
+    # model.add(LeakyReLU())
     model.add(Activation('relu'))
     model.add(Dropout(0.2))
     model.add(Dense(output, activation='sigmoid'))
@@ -84,10 +88,17 @@ def get_saes(layers):
 
     saes = Sequential()
     saes.add(Dense(layers[1], input_dim=layers[0], name='hidden1'))
+    # saes.add(BatchNormalization())
+    # saes.add(LeakyReLU())
     saes.add(Activation('relu'))
     saes.add(Dense(layers[2], name='hidden2'))
+    # saes.add(BatchNormalization())
+    # saes.add(LeakyReLU())
     saes.add(Activation('relu'))
     saes.add(Dense(layers[3], name='hidden3'))
+    # saes.add(BatchNormalization())
+    # saes.add(LeakyReLU())
+    saes.add(Activation('relu'))
     saes.add(Activation('relu'))
     saes.add(Dropout(0.2))
     saes.add(Dense(layers[4], activation='sigmoid'))
@@ -116,11 +127,13 @@ def get_cnn(units):
     return model
 
 def get_prophet():
-	"""
-	This function creates and returns a Prophet model.
+  """
+  This function creates and returns a Prophet model.
 
-	Returns:
-		Prophet: The Prophet model.
-	"""
-	model = Prophet()
-	return model
+  Returns:
+    Prophet: The Prophet model.
+  """
+  model = Prophet(yearly_seasonality=False, daily_seasonality=False, weekly_seasonality=False)
+  model.add_seasonality(name='daily', period=1, fourier_order=15)
+
+  return model
