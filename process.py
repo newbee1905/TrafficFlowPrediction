@@ -48,7 +48,6 @@ def calculate_time_with_flow(distance_km, traffic_flow):
 
 # Function to add traffic flow consideration to edge weight
 def adjust_edge_weight_with_traffic(G, edge, traffic_flow):
-    intersection1, intersection2 = edge
     distance = G.edges[edge]['distance']
 
     # Calculate expected travel time considering traffic flow and distance
