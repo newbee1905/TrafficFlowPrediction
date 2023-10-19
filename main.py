@@ -127,10 +127,11 @@ def main():
     lstm = load_model('model/lstm.h5')
     gru = load_model('model/gru.h5')
     saes = load_model('model/saes.h5')
+    cnn = load_model('model/cnn.h5')
     with open('model/prophet.json', 'rb') as fin:
         prophet = model_from_json(fin.read())
-    models = [lstm, gru, saes, prophet]
-    names = ['LSTM', 'GRU', 'SAEs', 'Prophet']
+    models = [lstm, gru, saes, cnn, prophet]
+    names = ['LSTM', 'GRU', 'SAEs', 'CNN', 'Prophet']
 
     file = 'data/Scats Data October 2006.xls'
     df = read_excel_data(file)
@@ -155,13 +156,10 @@ def main():
         print(name)
         eva_regress(y_test, predicted)
         y_preds.append(predicted[:periods])
-    # print("Prophet")
-    # predicted = prophet.predict(pd.DataFrame(prophet_test, columns=["lat", "lng", "ds", "y"]))
-    # # fig = prophet.plot(predicted[:periods])
-    # # fig.show()
-    # print(predicted[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].tail())
-    # eva_regress(prophet_test[:, 3], predicted["yhat"])
-    # y_preds.append(predicted["yhat"][:periods])
+    print("Prophet")
+    predicted = prophet.predict(pd.DataFrame(prophet_test, columns=["lat", "lng", "ds", "y"]))
+    eva_regress(prophet_test[:, 3], predicted["yhat"])
+    y_preds.append(predicted["yhat"][:periods])
 
     plot_results(y_test[:periods], y_preds, names, periods)
 

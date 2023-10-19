@@ -11,6 +11,7 @@ from data.data import process_data, read_excel_data, process_data_prophet
 from model import model
 from keras.models import Model
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau
+import sklearn.metrics as metrics
 from multiprocessing import cpu_count, Pool
 from prophet.serialize import model_to_json
 warnings.filterwarnings("ignore")
@@ -134,6 +135,25 @@ def train_prophet(model, data, name, config):
         index=False
     )
 
+def train_cnn(model, X_train, y_train, name, config):
+    model.compile(loss="mse", optimizer="adam", metrics=['mape'])
+    K.set_value(model.optimizer.learning_rate, 0.01)
+    early = EarlyStopping(monitor='val_loss', patience=30, verbose=0, mode='auto')
+    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=15, min_lr=0.001)
+    hist = model.fit(
+        X_train, y_train,
+        batch_size=config["batch"],
+        epochs=config["epochs"],
+        callbacks=[early, reduce_lr],
+        validation_split=0.05,
+        workers=cpu_count(),
+        use_multiprocessing=True
+    )
+
+    model.save(f'{data_folder}/model/{name}.h5')
+    df = pd.DataFrame.from_dict(hist.history)
+    df.to_csv(f'{data_folder}/model/{name}_loss.csv', encoding='utf-8', index=False)
+
 
 def main(argv):
     parser = argparse.ArgumentParser()
@@ -159,7 +179,7 @@ def main(argv):
     parser.add_argument(
         "--epochs",
         type=int,
-        default=30,
+        default=1800,
         help="Epochs for model training.")
     args = parser.parse_args()
 
