@@ -4,6 +4,7 @@ from pydantic import BaseModel
 import pandas as pd
 import numpy as np
 from keras.models import load_model
+from prophet.serialize import model_from_json
 from data.data import read_excel_data, process_data
 import time
 
@@ -57,6 +58,8 @@ models = {
     "lstm": load_model('model/lstm.h5'),
     "gru": load_model('model/gru.h5'),
     "saes": load_model('model/saes.h5'),
+    "cnn": load_model('model/cnn.h5'),
+    "prophet": model_from_json(open('model/prophet.json', 'rb').read()),
 }
 
 @app.post("/")
