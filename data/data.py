@@ -79,7 +79,18 @@ def process_data(df: pd.DataFrame, lags: int) -> tuple[np.ndarray, np.ndarray, n
 
     return X_train, y_train, X_test, y_test, flow_scaler, flow_rescaler, latlong_scaler
 
-def process_data_prophet(df: pd.DataFrame):
+def process_data_prophet(df: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Process Data for Prophet Model
+    Reshape and split data into train and test data for prophet model
+    
+    Parameters:
+        df (df.DataFram): dataframe of the data
+    
+    Returns:
+        train (np.ndarray)
+        test (np.ndarray)
+    """
     first_velo_col_pos = df.columns.get_loc("V00")
     flow_data = df.to_numpy()[:, first_velo_col_pos:]
 

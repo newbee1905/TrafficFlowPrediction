@@ -1,8 +1,8 @@
 """
 Definition of NN model
 """
-from keras.layers import Dense, Dropout, Activation, Conv1D, MaxPooling1D, Flatten, BatchNormalization, LeakyReLU
-from keras.layers import LSTM, GRU
+from keras.layers import Dense, Dropout, Activation, Flatten
+from keras.layers import LSTM, GRU, Conv1D
 from keras.models import Sequential, load_model
 from keras.models import Model
 from keras.regularizers import l1
@@ -108,8 +108,8 @@ def get_saes(layers):
     return models
 
 def get_cnn(units):
-    """LSTM(Long Short-Term Memory)
-    Build LSTM Model.
+    """CNN
+    Build CNN Model.
 
     # Arguments
         units: List(int), number of input, output and hidden units.
