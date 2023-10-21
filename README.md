@@ -33,12 +33,12 @@ You can choose "lstm", "gru", "saes", "cnn" or "prophet" as arguments. The ```.h
 
 ## Experiment
 
-Data are obtained from the Caltrans Performance Measurement System (PeMS). Data are collected in real-time from individual detectors spanning the freeway system across all major metropolitan areas of the State of California.
-	
-	device: Tesla K80
-	dataset: PeMS 5min-interval traffic flow data
-	optimizer: RMSprop(lr=0.001, rho=0.9, epsilon=1e-06)
-	batch_szie: 256 
+Data are obtained from the Scats Data system provided by Swinburne for Unit 30018 for Semester 2 2023. This dataset covers traffic flow data for the month of October 2006 and focuses on the top A section.
+
+    device: Tesla V100
+    dataset: Scats Data on October 2006
+    optimizer: Adam(lr=0.01)
+    batch_size: 8192
 
 
 **Run command below to run the program:**
@@ -49,14 +49,13 @@ python main.py
 
 These are the details for the traffic flow prediction experiment.
 
-
-| Metrics | MAE    | MSE       | RMSE    | MAPE      | R2       | Explained variance score |
-| ------- |:------:| :-------: | :-----: | :-------: | :------: | :----------------------: |
-| LSTM    | 13.40  | 419.94    | 20.49   | 22.85%    | 0.9444   | 0.9445                   |
-| GRU     | 13.36  | 415.87    | 20.39   | 23.31%    | 0.9449   | 0.9450                   |
-| SAEs    | 13.32  | 417.80    | 20.44   | 23.54%    | 0.9446   | 0.9452                   |
-| CNN     | 13.52  | 421.14    | 20.52   | 24.61%    | 0.9442   | 0.9445                   |
-| Prophet | 81.29  | 9984.90   | 99.92   | 475.04%   | -0.8767  | -0.8360                  |
+| Metrics | MAE    | MSE      | RMSE    | MAPE     | R2       | Explained variance score |
+| ------- |:------:|:--------:| :-----: | :-------:| :------: | :----------------------: |
+| LSTM    | 13.441 | 419.015  | 20.469  | 21.291%  | 0.944    | 0.944                    |
+| GRU     | 13.328 | 413.412  | 20.332  | 24.063%  | 0.945    | 0.945                    |
+| SAEs    | 13.313 | 416.107  | 20.398  | 22.649%  | 0.944    | 0.944                    |
+| CNN     | 13.488 | 418.997  | 20.469  | 24.626%  | 0.944    | 0.944                    |
+| Prophet | 81.277 | 9982.980 | 99.914  | 475.040% | -0.876   | -0.835                   |
 
 ![evaluate](/images/eva.png)
 

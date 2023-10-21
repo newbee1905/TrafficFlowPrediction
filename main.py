@@ -67,42 +67,60 @@ def eva_regress(y_true, y_pred):
     print('rmse:%f' % math.sqrt(mse))
     print('r2:%f' % r2)
 
-
-def plot_results(y_true, y_preds, names, periods):
-    """Plot
-    Plot the true data and predicted data.
-
+def plot_results(y_true, y_preds, names, periods, cols=3):
+    """Plot multiple subplots in a grid, each comparing true data to one prediction method.
+    
     # Arguments
-        y_true: List/ndarray, ture data.
-        y_pred: List/ndarray, predicted data.
-        names: List, Method names.
-        periods: amout of time in the plots
+        y_true: List/ndarray, true data.
+        y_preds: List/ndarray, list of predicted data from various methods.
+        names: List, method names.
+        periods: int, number of time periods to display in plots.
+        cols: int, number of columns of figures
     """
     d = '2006-10-01 00:00'
     y_true = y_true[:periods]
     x = pd.date_range(d, periods=periods, freq='15min')
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
+    # Calculate rows and columns for subplots grid
+    total = len(y_preds) + 1
+    rows = total // cols 
+    rows += total % cols
+    position = range(1, total + 1)
 
-    ax.plot(x, y_true, label='True Data')
-    for name, y_pred in zip(names, y_preds):
-        ax.plot(x, y_pred, label=name)
+    # Generating unique colours
+    colours = plt.cm.tab10(np.linspace(0, 1, len(y_preds) + 1))
 
-    plt.legend()
-    plt.grid(True)
-    plt.xlabel('Time of Day')
-    plt.ylabel('Flow')
+    fig = plt.figure(figsize=(15, 5 * rows))
+
+    # Plotting the true data
+    ax = fig.add_subplot(rows, cols, position[0])
+    ax.plot(x, y_true, label='True Data', color=colours[0])
+    ax.set_title('True Data')
+    ax.grid(True)
+    ax.set_ylabel('Flow')
 
     date_format = mpl.dates.DateFormatter("%H:%M")
-    ax.xaxis.set_major_formatter(date_format)
+
+    # Plotting each prediction
+    for i, (name, y_pred, color) in enumerate(zip(names, y_preds, colours[1:])):
+        ax = fig.add_subplot(rows, cols, position[i + 1])
+        ax.plot(x, y_true, label='True Data', color=colours[0])
+        ax.plot(x, y_pred, label=name, color=color)
+        ax.set_title(name)
+        ax.grid(True)
+        ax.set_ylabel('Flow')
+        ax.legend()
+
+        ax.xaxis.set_major_formatter(date_format)
+
     fig.autofmt_xdate()
 
-
+    # Save the figure
     now = datetime.now()
     current_time = now.strftime("%m-%d-%Y-%H-%M-%S")
     plt.savefig(f'output-{current_time}.png', dpi=2400)
 
+    plt.tight_layout()
     plt.show()
 
 
