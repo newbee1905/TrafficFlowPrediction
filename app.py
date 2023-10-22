@@ -46,6 +46,8 @@ class ModelEnum(str, Enum):
     lstm = "lstm"
     gru = "gru"
     saes = "saes"
+    cnn = "cnn"
+    prophet = "prophet"
 
 class PredTrafficFlow(BaseModel):
     start_time: str
@@ -70,9 +72,13 @@ def root(pred: PredTrafficFlow) -> float:
     latlong = latlong_scaler.transform(latlong.reshape(-1, 1)).reshape(-1, 2)
     print("--- Getting Lat Long ---\n--- %s seconds ---\n" % (time.time() - start_time))
 
+    if pred.model == 'prophet':
+      return
+
     start_time = time.time()
     flows = gen_fake_flow(grouped[(lat, lng)], pred.start_time)
     print("--- Generating Fake Flows ---\n--- %s seconds ---\n" % (time.time() - start_time))
+
 
     start_time = time.time()
     X = np.array([np.append(latlong, np.vectorize(flow_scaler)(flows))])

@@ -5,6 +5,7 @@ astunparse==1.6.3
 cachetools==5.3.1
 certifi==2023.7.22
 charset-normalizer==3.3.0
+click==8.1.7
 cmdstanpy==1.2.0
 contourpy==1.1.1
 cycler==0.12.1
@@ -17,6 +18,7 @@ google-auth-oauthlib==1.0.0
 google-pasta==0.2.0
 graphviz==0.20.1
 grpcio==1.59.0
+h11==0.14.0
 h5py==3.10.0
 holidays==0.35
 idna==3.4
@@ -66,6 +68,7 @@ tqdm==4.66.1
 typing_extensions==4.5.0
 tzdata==2023.3
 urllib3==2.0.7
+uvicorn==0.23.2
 Werkzeug==3.0.0
 wrapt==1.15.0
 xlrd==2.0.1
