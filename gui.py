@@ -113,7 +113,7 @@ time_dropdown.set("0:00")
 
 # Dropdown menu for ML model selection
 ttk.Label(frm, text="Select ML Model:").grid(column=0, row=3, sticky=tk.W)
-ml_model_options = ["LSTM", "GRU", "SAES"]
+ml_model_options = ["LSTM", "GRU", "SAES", "CNN", "Prophet"]
 ml_model_var = tk.StringVar()
 ml_model_dropdown = ttk.Combobox(frm, values=ml_model_options, textvariable=ml_model_var, width=20) 
 ml_model_dropdown.grid(column=1, row=3, sticky=tk.W)
@@ -157,7 +157,7 @@ flow_time_dropdown.set("0:00")
 
 # Dropdown for ML model selection specific to flow data
 ttk.Label(frm, text="Select Model for Predicting Traffic Volume:").grid(column=0, row=10, sticky=tk.W)
-flow_model_options = ["LSTM", "GRU", "SAES"]
+flow_model_options = ["LSTM", "GRU", "SAES", "CNN", "Prophet"]
 flow_model_var = tk.StringVar()
 flow_model_dropdown = ttk.Combobox(frm, values=flow_model_options, textvariable=flow_model_var, width=20) 
 flow_model_dropdown.grid(column=1, row=10, sticky=tk.W)
