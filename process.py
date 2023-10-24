@@ -6,6 +6,7 @@ import requests
 import re
 import json
 import heapq
+import copy
 
 # Function to calculate length of road segments
 def haversine(lat1, lon1, lat2, lon2):
@@ -55,6 +56,7 @@ def adjust_edge_weight_with_traffic(G, edge, traffic_flow):
 
     # Return the weight of the edge with the calculated travel time (in minutes for simplicity)
     return time_minutes + time_seconds / 60.0
+
 
 # Dijkstra search to find optimal route
 def dijkstra_search(G, start, end, selected_time, selected_model):
@@ -168,6 +170,7 @@ def a_star_search(G, start, end, selected_time, selected_model):
 
     return path, g_values[end]  # Return the shortest path and the distance
 
+
 # Bi-Directional Search Algorithm
 def bidirectional_search(G, start, end, selected_time, selected_model):
     if start == end:
@@ -235,61 +238,144 @@ def bidirectional_search(G, start, end, selected_time, selected_model):
     return path, total_distance  # Return the full path, total distance
 
 
+# Get up to 5 Routes with Dijkstra search
+def yens_k_shortest_paths(G, start, end, selected_time, selected_model, k=5):
+    # Determine the shortest path from the start to the end.
+    shortest_path, _ = dijkstra_search(G, start, end, selected_time, selected_model)
+    if not shortest_path:
+        return []  # No path found
+
+    A = [shortest_path]  # List to store the k-shortest paths
+    B = []  # Temporary storage for candidate paths
+    visited_scats_sites = set()  # Set to store visited SCATS sites
+
+    # Extract SCATS sites from the first path
+    for node in shortest_path:
+        if 'scats_number' in G.nodes[node]:
+            visited_scats_sites.add(G.nodes[node]['scats_number'])
+
+    for i in range(1, k):
+        for j in range(len(A[-1]) - 1):
+            # Spur node is retrieved from the previous k-shortest path, and the root path is the subpath of the shortest path.
+            spur_node = A[-1][j]
+            root_path = A[-1][:j + 1]
+
+            # Remove the links that are part of the previous shortest paths which share the same root path.
+            edges_removed = []
+            for path in A:
+                if root_path == path[:j + 1] and (path[j], path[j + 1]) in G.edges:
+                    edge_data = G[path[j]][path[j + 1]]
+                    G.remove_edge(path[j], path[j + 1])
+                    edges_removed.append((path[j], path[j + 1], edge_data))
+
+            # Calculate the spur path from the spur node to the sink.
+            spur_path, _ = dijkstra_search(G, spur_node, end, selected_time, selected_model)
+
+            # Entire path is made up of the root path and spur path.
+            if spur_path:
+                total_path = root_path[:-1] + spur_path
+
+                new_scats_sites = set()
+                for node in total_path:
+                    if 'scats_number' in G.nodes[node]:
+                        new_scats_sites.add(G.nodes[node]['scats_number'])
+
+                if not new_scats_sites.issubset(visited_scats_sites) and total_path not in B:  # Ensure the path has new SCATS sites
+                    heapq.heappush(B, (path_length(G, total_path), total_path))
+                    visited_scats_sites.update(new_scats_sites)  # Add these SCATS sites to the visited set
+
+            # Add back the edges that were removed from the graph.
+            for edge in edges_removed:
+                node1, node2, edge_data = edge
+                G.add_edge(node1, node2, **edge_data)
+
+        if B:
+            # Add the shortest path among the candidates to the k-shortest paths.
+            _, path_k = heapq.heappop(B)
+            A.append(path_k)
+        else:
+            break
+
+    return A  # Return the list of k-shortest paths
+
+
+
+def path_length(G, path):
+    """Calculate the total length of a path."""
+    length = 0
+    for i in range(len(path) - 1):
+        u, v = path[i], path[i + 1]
+        length += G[u][v]['weight']
+    return length
+
+
 
 # Main function to find route between intersections
 def find_route(start_intersection, end_intersection, selected_time, selected_model, algorithm_type):
     # Check if start and end intersections are in the graph
     if start_intersection in G and end_intersection in G:
+        routes = []
         if algorithm_type == "Dijkstra":
-             # Calculate the shortest path and distance using Dijkstra search
             shortest_path, shortest_distance = dijkstra_search(G, start_intersection, end_intersection, selected_time, selected_model)
+            routes.append((shortest_path, shortest_distance))
         elif algorithm_type == "A*":
-             # Calculate the shortest path and distance using A* search
             shortest_path, shortest_distance = a_star_search(G, start_intersection, end_intersection, selected_time, selected_model)
+            routes.append((shortest_path, shortest_distance))
         elif algorithm_type == "Bi-Directional":
-             # Calculate the shortest path and distance using Bi-Directional search
-            shortest_path, shortest_distance = bidirectional_search(G, start_intersection, end_intersection, selected_time, selected_model)            
+            shortest_path, shortest_distance = bidirectional_search(G, start_intersection, end_intersection, selected_time, selected_model)
+            routes.append((shortest_path, shortest_distance))
+        elif algorithm_type == "Yen's K-Shortest":
+            # Yen's K-Shortest Paths returns multiple paths
+            k_paths = yens_k_shortest_paths(G, start_intersection, end_intersection, selected_time, selected_model, k=5)
+            for path in k_paths:
+                distance = path_length(G, path)  # Calculate the total distance of the path
+                routes.append((path, distance))
         else:
-            return None # Error
-        
-        # Set time variables to 0
-        total_time_minutes = 0
-        total_time_seconds = 0
-        
-        # Calculate time for each road segment considering traffic flow
-        for i in range(len(shortest_path) - 1):
-            intersection1 = shortest_path[i]
-            intersection2 = shortest_path[i + 1]
-            
-            # Get the distance between two intersections
-            distance = G[intersection1][intersection2]['distance'] 
-            
-            # Fetch traffic flow prediction from the server
-            traffic_flow = get_traffic_flow(selected_time, intersection1, selected_model)
-            
-            # Calculate the time for this road segment in minutes and seconds considering traffic flow
-            segment_time_minutes, segment_time_seconds = calculate_time_with_flow(distance, traffic_flow)
-            
-            # Update the total time
-            total_time_minutes += segment_time_minutes
-            total_time_seconds += segment_time_seconds
-            
-            # Adjust total time if there are more than 59 seconds
-            if total_time_seconds >= 60:
-                total_time_minutes += total_time_seconds // 60
-                total_time_seconds = total_time_seconds % 60
-        
-        # Return all route information to be displayed on the GUI
-        return {
-            "start_intersection": start_intersection,
-            "end_intersection": end_intersection,
-            "shortest_path": shortest_path,
-            "shortest_distance": shortest_distance,
-            "total_time_minutes": total_time_minutes,
-            "total_time_seconds": total_time_seconds,
-        }
+            return None  # Error
+
+        # Process each route
+        route_details = []
+        for path, distance in routes:
+            total_time_minutes = 0
+            total_time_seconds = 0
+
+            # Calculate time for each road segment considering traffic flow
+            for i in range(len(path) - 1):
+                intersection1 = path[i]
+                intersection2 = path[i + 1]
+
+                # Get the distance between two intersections
+                segment_distance = G[intersection1][intersection2]['distance'] 
+
+                # Fetch traffic flow prediction from the server
+                traffic_flow = get_traffic_flow(selected_time, intersection1, selected_model)
+
+                # Calculate the time for this road segment in minutes and seconds considering traffic flow
+                segment_time_minutes, segment_time_seconds = calculate_time_with_flow(segment_distance, traffic_flow)
+
+                # Update the total time
+                total_time_minutes += segment_time_minutes
+                total_time_seconds += segment_time_seconds
+
+                # Adjust total time if there are more than 59 seconds
+                if total_time_seconds >= 60:
+                    total_time_minutes += total_time_seconds // 60
+                    total_time_seconds = total_time_seconds % 60
+
+            route_info = {
+                "start_intersection": start_intersection,
+                "end_intersection": end_intersection,
+                "path": path,
+                "distance": distance,
+                "total_time_minutes": total_time_minutes,
+                "total_time_seconds": total_time_seconds,
+            }
+            route_details.append(route_info)
+
+        return route_details
     else:
         return None
+
 
     
 # Function to fetch traffic flow prediction from the server
@@ -511,6 +597,22 @@ def visualize_route_on_map(start_intersection, end_intersection, shortest_path, 
     else:
         print("Start or end intersection not found in the geocoding service.")
 
+
+# Define a function to find the closest intersection on the same road
+def closest_intersection(current, others, G):
+    min_distance = float('inf')
+    closest = None
+    for other in others:
+        if other != current:
+            lat1, lon1 = G.nodes[current]['latitude'], G.nodes[current]['longitude']
+            lat2, lon2 = G.nodes[other]['latitude'], G.nodes[other]['longitude']
+            distance = haversine(lat1, lon1, lat2, lon2)
+            if distance < min_distance:
+                min_distance = distance
+                closest = other
+    return closest, min_distance
+
+
 # Read the Excel file into a DataFrame
 scats_data = pd.read_excel('Scats Data October 2006.xls', sheet_name='Data', skiprows=1)
 
@@ -553,14 +655,10 @@ for index, row in scats_data.iterrows():
 for road_name, intersections in road_nodes.items():
     if len(intersections) > 1:
         for i in range(len(intersections)):
-            for j in range(i + 1, len(intersections)):
-                intersection1 = intersections[i]
-                intersection2 = intersections[j]
-                if not G.has_edge(intersection1, intersection2) and intersection1 != intersection2:  # Exclude self-loop edges
-                    lat1, lon1 = G.nodes[intersection1]['latitude'], G.nodes[intersection1]['longitude']
-                    lat2, lon2 = G.nodes[intersection2]['latitude'], G.nodes[intersection2]['longitude']
-                    distance = haversine(lat1, lon1, lat2, lon2)
-                    G.add_edge(intersection1, intersection2, weight=distance, distance=distance)
-
+            current_intersection = intersections[i]
+            other_intersections = intersections[:i] + intersections[i+1:]
+            closest, min_distance = closest_intersection(current_intersection, other_intersections, G)
+            if closest and not G.has_edge(current_intersection, closest):  # Exclude self-loop edges
+                G.add_edge(current_intersection, closest, weight=min_distance, distance=min_distance)
 
 
