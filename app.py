@@ -73,7 +73,9 @@ def root(pred: PredTrafficFlow) -> float:
     print("--- Getting Lat Long ---\n--- %s seconds ---\n" % (time.time() - start_time))
 
     if pred.model == 'prophet':
-      return
+      prophet_data = pd.DataFrame([[lat, lng, start_time]], columns=["lat", "lng", "ds"])
+      predicted = models[pred.model].predict(pd.DataFrame(prophet_data))
+      return predicted["yhat"]
 
     start_time = time.time()
     flows = gen_fake_flow(grouped[(lat, lng)], pred.start_time)

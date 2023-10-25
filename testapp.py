@@ -6,7 +6,7 @@ data = {
     "start_time": "23:00",  
     "lat": -37.860,  
     "lng": 145.091,  
-    "model": "cnn"  
+    "model": "prophet"  
 }
 
 # Convert the data to JSON format
