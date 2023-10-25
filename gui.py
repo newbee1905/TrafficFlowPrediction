@@ -59,7 +59,7 @@ def calculate_route():
 def display_route(route_number):
     if 1 <= route_number <= len(all_routes):  # Routes start from 1
         route_index = route_number - 1  # Convert to 0-based index
-        route_info = all_routes[route_index - 1]  # -1 because list indices are 0-based
+        route_info = all_routes[route_index]
         shortest_path = route_info['path']
         formatted_path = "\n".join([f"{i + 1}. {shortest_path[i]} -> {shortest_path[i + 1]}" for i in range(len(shortest_path) - 1)])
         

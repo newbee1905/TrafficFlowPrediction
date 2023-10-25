@@ -309,7 +309,6 @@ def path_length(G, path):
     return length
 
 
-
 # Main function to find route between intersections
 def find_route(start_intersection, end_intersection, selected_time, selected_model, algorithm_type):
     # Check if start and end intersections are in the graph
@@ -362,6 +361,9 @@ def find_route(start_intersection, end_intersection, selected_time, selected_mod
                     total_time_minutes += total_time_seconds // 60
                     total_time_seconds = total_time_seconds % 60
 
+            # For sorting multiple routes
+            total_time = total_time_minutes * 60 + total_time_seconds
+
             route_info = {
                 "start_intersection": start_intersection,
                 "end_intersection": end_intersection,
@@ -369,15 +371,18 @@ def find_route(start_intersection, end_intersection, selected_time, selected_mod
                 "distance": distance,
                 "total_time_minutes": total_time_minutes,
                 "total_time_seconds": total_time_seconds,
+                "_total_time": total_time  # Internal use for sorting. Won't be used in GUI.
             }
             route_details.append(route_info)
+
+        # Sort routes based on total time
+        route_details.sort(key=lambda x: int(x["_total_time"]))
 
         return route_details
     else:
         return None
 
-
-    
+   
 # Function to fetch traffic flow prediction from the server
 def get_traffic_flow(selected_time, intersection_name, selected_model):
     # Convert the model to lowercase
