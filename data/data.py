@@ -111,7 +111,7 @@ def process_data_prophet(df: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
     expanded_latlong = np.repeat(latlong_data, num_time_steps, axis=0).reshape(-1, 2)
 
     expanded_date = np.repeat(date_data, num_time_steps, axis=0).reshape(-1, num_time_steps)
-    expanded_date = (expanded_date + time_values).reshape(-1, 1)
+    expanded_date = pd.to_datetime((expanded_date + time_values).reshape(-1, 1))
 
     train = np.hstack((expanded_latlong, expanded_date, flatten_flow_data))
 
