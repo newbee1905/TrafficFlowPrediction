@@ -14,11 +14,15 @@ time_options = ["0:00", "0:15", "0:30", "0:45", "1:00", "1:15", "1:30", "1:45", 
 # Global variable to store the routes
 all_routes = []
 
+# Global variable for coords flag value
+current_coords_flag = 0  # Default value
+
+
 def open_map_in_browser():
     webbrowser.open("route_map.html", new=2)
 
 def calculate_route():
-    global all_routes
+    global all_routes, current_coords_flag 
     all_routes = []  # Clear previous routes
 
     # Get the entered SCATS numbers as integers
@@ -37,6 +41,15 @@ def calculate_route():
     # Get the selected algorithm
     selected_algorithm = algorithm_var.get()
 
+    # Get coord type selection
+    if coordinate_var.get() == "Default Coords":
+        use_default_coords = 0
+    else:
+        use_default_coords = 1
+
+    # Set flag value
+    current_coords_flag = use_default_coords
+
     if start_intersection and end_intersection:
         route_details = find_route(start_intersection, end_intersection, selected_time, selected_model, selected_algorithm)
 
@@ -50,13 +63,14 @@ def calculate_route():
             route_dropdown.grid()
 
             # Show the "Open Map in Browser" button
-            open_map_button.grid(column=0, row=8, columnspan=2)
+            open_map_button.grid(column=0, row=9, columnspan=2)
         else:
             result_label.config(text="No routes found from start to end intersection.")
     else:
         result_label.config(text="Please enter valid SCATS numbers for both start and end intersections.")
 
 def display_route(route_number):
+    global current_coords_flag
     if 1 <= route_number <= len(all_routes):  # Routes start from 1
         route_index = route_number - 1  # Convert to 0-based index
         route_info = all_routes[route_index]
@@ -69,12 +83,11 @@ def display_route(route_number):
                                 f"\nPath:\n{formatted_path}")
 
         # Call the function to visualize the route on a map
-        visualize_route_on_map(route_info['start_intersection'], route_info['end_intersection'], route_info['path'], G)
+        visualize_route_on_map(route_info['start_intersection'], route_info['end_intersection'], route_info['path'], G, current_coords_flag)
     else:
         result_label.config(text="Invalid route selection.")
 
 def update_route_dropdown():
-    """Update the route dropdown values based on the all_routes global variable."""
     route_options = [i + 1 for i in range(len(all_routes))]  # +1 because routes start from 1
     route_dropdown['values'] = route_options
     if route_options:
@@ -159,25 +172,34 @@ algorithm_dropdown = ttk.Combobox(frm, values=algorithm_options, textvariable=al
 algorithm_dropdown.grid(column=1, row=4, sticky=tk.W) 
 algorithm_dropdown.set("Dijkstra")  # Default value
 
+# Dropdown menu for coordinate selection
+ttk.Label(frm, text="Select Coordinate Source:").grid(column=0, row=5, sticky=tk.W)  
+coordinate_options = ["Default Coords", "OpenStreetMap Coords"]
+coordinate_var = tk.StringVar()
+coordinate_dropdown = ttk.Combobox(frm, values=coordinate_options, textvariable=coordinate_var, width=20) 
+coordinate_dropdown.grid(column=1, row=5, sticky=tk.W) 
+coordinate_dropdown.set("Default Coords")  # Default value
+
+
 # Button to calculate a route
 calculate_button = ttk.Button(frm, text="Calculate Route", command=calculate_route)
-calculate_button.grid(column=0, row=5, columnspan=2)
+calculate_button.grid(column=0, row=6, columnspan=2)
 
 
 # Create label for route dropdown (initially hidden)
 route_dropdown_label = ttk.Label(frm, text="Select Route:")
-route_dropdown_label.grid(column=0, row=6, sticky=tk.W)
+route_dropdown_label.grid(column=0, row=7, sticky=tk.W)
 route_dropdown_label.grid_remove()
 
 # Create route dropdown (initially hidden)
 route_var = tk.IntVar()
 route_dropdown = ttk.Combobox(frm, textvariable=route_var, width=20, state="readonly") 
-route_dropdown.grid(column=1, row=6, sticky=tk.W)
+route_dropdown.grid(column=1, row=7, sticky=tk.W)
 route_dropdown.bind("<<ComboboxSelected>>", lambda e: display_route(route_var.get()))
 route_dropdown.grid_remove()
 
 result_label = ttk.Label(frm, text="")
-result_label.grid(column=0, row=7, columnspan=2)
+result_label.grid(column=0, row=8, columnspan=2)
 
 # Button to open the map in a browser (initially hidden)
 open_map_button = ttk.Button(frm, text="Open Map in Browser", command=open_map_in_browser)

@@ -486,7 +486,7 @@ def find_closest_nodes_by_scats(start_scats, end_scats, scats_data, G):
     return selected_start_node, selected_end_node
 
 
-def visualize_route_on_map(start_intersection, end_intersection, shortest_path, G):
+def visualize_route_on_map(start_intersection, end_intersection, shortest_path, G, coords_flag):
     # Function to geocode an intersection name into coordinates
     def geocode_intersection(intersection_name):
         try:
@@ -512,9 +512,24 @@ def visualize_route_on_map(start_intersection, end_intersection, shortest_path, 
         cleaned_name = re.sub(r'(\w+)\s?[nswe]+[sw]*\s?of\s?(\w+)', r'\1 \2', name, flags=re.IGNORECASE)
         return cleaned_name
 
-    # Get coordinates for start and end intersections
-    start_coordinates = geocode_intersection(start_intersection)
-    end_coordinates = geocode_intersection(end_intersection)
+    # Function to retrieve coordinates based on the flag
+    def get_coordinates(intersection_name):
+        # If coords_flag is 1, use the API to fetch coordinates
+        if coords_flag == 1:
+            coordinates = geocode_intersection(intersection_name)
+            # If geocoding fails, use the default coordinates
+            if coordinates is None:
+                coordinates = G.nodes[intersection_name].get('latitude', None), G.nodes[intersection_name].get('longitude', None)
+        # If coords_flag is 0, use the default coordinates from the graph nodes
+        else:
+            coordinates = G.nodes[intersection_name].get('latitude', None), G.nodes[intersection_name].get('longitude', None)
+        
+        return coordinates
+
+
+    start_coordinates = get_coordinates(start_intersection)
+    end_coordinates = get_coordinates(end_intersection)
+
 
     # Handle start intersection not found
     if start_coordinates is None:
@@ -562,8 +577,8 @@ def visualize_route_on_map(start_intersection, end_intersection, shortest_path, 
         # Add markers for the intersections along the route
         for i in range(len(shortest_path)):
             intersection_name = shortest_path[i]
-            intersection_coordinates = geocode_intersection(intersection_name)
-            if intersection_coordinates:
+            intersection_coordinates = get_coordinates(intersection_name)
+            if intersection_coordinates != (None, None):
                 # Add the intersection coordinates to the route
                 route_coordinates.append(intersection_coordinates)
 
@@ -574,20 +589,7 @@ def visualize_route_on_map(start_intersection, end_intersection, shortest_path, 
                     icon=fm.Icon(color='blue')
                 ).add_to(m)
             else:
-                print(f"Geocoding failed for intersection: {intersection_name}")
-                # If geocoding fails, use the coordinates from the graph nodes instead as a fallback
-                if intersection_name in G.nodes:
-                    node_data = G.nodes[intersection_name]
-                    intersection_coordinates = (node_data['latitude'], node_data['longitude'])
-                    route_coordinates.append(intersection_coordinates)
-                    # Create a marker for the intersection
-                    intersection_marker = fm.Marker(
-                        location=intersection_coordinates,
-                        popup=intersection_name,
-                        icon=fm.Icon(color='blue')
-                    ).add_to(m)
-                else:
-                    print(f"No coordinates found for intersection: {intersection_name}")
+                print(f"No coordinates found for intersection: {intersection_name}")
 
         # Add a PolyLine to visualize the route
         route_line = fm.PolyLine(
