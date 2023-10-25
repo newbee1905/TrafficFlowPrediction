@@ -2,7 +2,8 @@ import tkinter as tk
 from tkinter import ttk
 import networkx as nx
 import pandas as pd
-from process import get_traffic_flow, find_route, find_closest_nodes_by_scats, visualize_route_on_map, G as G
+from process import get_traffic_flow, find_route, find_closest_nodes_by_scats, G as G
+from mapper import visualize_route_on_map
 import webbrowser
 
 # Load the SCATS data into a DataFrame
