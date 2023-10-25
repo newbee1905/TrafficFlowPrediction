@@ -175,7 +175,8 @@ def main():
         eva_regress(y_test, predicted)
         y_preds.append(predicted[:periods])
     print("Prophet")
-    predicted = prophet.predict(pd.DataFrame(prophet_test, columns=["lat", "lng", "ds", "y"]))
+    prophet_test_data = pd.DataFrame(prophet_test, columns=["lat", "lng", "ds", "y"])
+    predicted = prophet.predict(pd.DataFrame(prophet_test_data))
     eva_regress(prophet_test[:, 3], predicted["yhat"])
     y_preds.append(predicted["yhat"][:periods])
 

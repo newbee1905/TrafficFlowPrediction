@@ -118,8 +118,8 @@ def train_prophet(model, data, name, config):
     Returns:
         None
     """
-    model.add_regressor('lat')
-    model.add_regressor('lng')
+    # model.add_regressor('lat')
+    # model.add_regressor('lng')
     hist = model.fit(data)
     with open(f'model/{name}.json', 'w') as fout:
         fout.write(model_to_json(model))  # Save model
@@ -191,7 +191,6 @@ def main(argv):
     if args.model == 'prophet':
         _X_train, _  = process_data_prophet(df)
         X_train = pd.DataFrame(_X_train, columns=["lat", "lng", "ds", "y"])
-        # X_train = pd.DataFrame(_X_train[:, 2:4], columns=["ds", "y"])
         m = model.get_prophet()
         train_prophet(m, X_train, args.model, config)
     if args.model == 'saes':

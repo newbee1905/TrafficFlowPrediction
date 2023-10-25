@@ -127,13 +127,14 @@ def get_cnn(units):
     return model
 
 def get_prophet():
-  """
-  This function creates and returns a Prophet model.
+    """
+    This function creates and returns a Prophet model.
 
-  Returns:
-    Prophet: The Prophet model.
-  """
-  model = Prophet(yearly_seasonality=False, daily_seasonality=False, weekly_seasonality=False)
-  model.add_seasonality(name='daily', period=1, fourier_order=15)
+    Returns:
+      Prophet: The Prophet model.
+    """
+    model = Prophet(yearly_seasonality=False, daily_seasonality=False, weekly_seasonality=False)
+    model.add_seasonality(name='daily', period=96, fourier_order=8)
+    model.add_seasonality(name='weekly', period=96*7, fourier_order=3)
 
-  return model
+    return model
