@@ -9,6 +9,10 @@ This is the project for our unit COS30018 to upgrade the original repo: [xiaochu
 - Tensorflow-gpu 2.13.0
 - Keras 2.13.1
 - scikit-learn 1.3.1
+- networkx 3.1
+- requests 2.31.0
+- folium 0.14.0
+- tk 0.1.0
 
 Please use the requirements.txt file to setup the environment.
 
