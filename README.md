@@ -5,7 +5,8 @@ Traffic Flow Prediction with Neural Networks(SAEs、LSTM、GRU, CNN, Prophet).
 This is the project for our unit COS30018 to upgrade the original repo: [xiaochus/TrafficFlowPrediction](https://github.com/xiaochus/TrafficFlowPrediction).
 
 ## Requirement
-- Python 3.11
+
+- python 3.11
 - Tensorflow-gpu 2.13.0
 - Keras 2.13.1
 - scikit-learn 1.3.1
@@ -13,10 +14,13 @@ This is the project for our unit COS30018 to upgrade the original repo: [xiaochu
 - requests 2.31.0
 - folium 0.14.0
 - tk 0.1.0
+- fastapi 0.103.2
 
 Please use the requirements.txt file to setup the environment.
 
 ## Setting up
+
+### Linux
 
 ```bash
 pyton -m venv venv
@@ -24,16 +28,37 @@ source ./venv/bin/activate
 pip install -r requirements.txt
 ```
 
+### Windows
+
+```powershell
+pyton -m venv venv
+.\venv\Scripts\activate.bat
+pip install -r requirements.txt
+```
+
+### In case installing from requirements.txt fail, please run:
+
+```bash
+pip install keras scikit-learn numpy pandas tensorflow==2.13 prophet networkx==3.1 requests==2.31.0 folium==0.14.0 fastapi pydantic-core pydantic xlrd uvicorn tk gdown pydot graphviz
+```
+
 ## Train the model
 
 **Run command below to train the model:**
 
-```
-python train.py --model model_name
+```bash
+python train.py --model model_name --epoch 1800
 ```
 
 You can choose "lstm", "gru", "saes", "cnn" or "prophet" as arguments. The ```.h5``` weight file was saved at model folder. For prophet model, there will be a json file in the model folder.
 
+We are training with epoch 1800 on Google Colab, please use smaller epoch like 30 to test the program on your local machine instead of fully train them.
+
+**You can also get all the models we trained on Google Colab by running:**
+
+```bash
+pyton model/download.py
+```
 
 ## Experiment
 
@@ -53,13 +78,13 @@ python main.py
 
 These are the details for the traffic flow prediction experiment.
 
-| Metrics | MAE    | MSE      | RMSE    | MAPE     | R2       | Explained variance score |
-| ------- |:------:|:--------:| :-----: | :-------:| :------: | :----------------------: |
-| LSTM    | 13.441 | 419.015  | 20.469  | 21.291%  | 0.944    | 0.944                    |
-| GRU     | 13.328 | 413.412  | 20.332  | 24.063%  | 0.945    | 0.945                    |
-| SAEs    | 13.313 | 416.107  | 20.398  | 22.649%  | 0.944    | 0.944                    |
-| CNN     | 13.488 | 418.997  | 20.469  | 24.626%  | 0.944    | 0.944                    |
-| Prophet | 81.277 | 9982.980 | 99.914  | 475.040% | -0.876   | -0.835                   |
+| Metrics  | MAE       | MSE          | RMSE       | MAPE         | R2          | Explained variance score |
+| -------- |:---------:|:------------:| :---------:| :----------: | :---------: | :----------------------: |
+| LSTM     | 13.460    | 423.637      | 20.582     | 21.968%      | 0.9439      | 0.9448                   |
+| GRU      | 13.375    | 414.661      | 20.363     | 22.510%      | 0.9451      | 0.9451                   |
+| SAEs     | 13.371    | 415.322      | 20.379     | 24.148%      | 0.9450      | 0.9450                   |
+| CNN      | 13.492    | 420.323      | 20.502     | 24.169%      | 0.9443      | 0.9443                   |
+| Prophet  | 47.603    | 3203.730     | 56.602     | 242.007%     | 0.1041      | 0.1640                   |
 
 ![evaluate](/images/eva.png)
 

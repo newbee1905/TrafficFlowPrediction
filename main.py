@@ -176,8 +176,10 @@ def main():
         y_preds.append(predicted[:periods])
     print("Prophet")
     prophet_test_data = pd.DataFrame(prophet_test, columns=["lat", "lng", "ds", "y"])
-    predicted = prophet.predict(pd.DataFrame(prophet_test_data))
-    eva_regress(prophet_test[:, 3], predicted["yhat"])
+    prophet_test_data = prophet_test_data.groupby('ds')['y'].mean().reset_index()
+    prophet_test_data['ds'] = pd.to_datetime(prophet_test_data['ds'])
+    predicted = prophet.predict(prophet_test_data)
+    eva_regress(prophet_test_data['y'], predicted["yhat"])
     y_preds.append(predicted["yhat"][:periods])
 
     plot_results(y_test[:periods], y_preds, names, periods)
