@@ -20,13 +20,23 @@ Please use the requirements.txt file to setup the environment.
 
 ## Setting up
 
+### Linux
+
 ```bash
 pyton -m venv venv
 source ./venv/bin/activate
 pip install -r requirements.txt
 ```
 
-**In case installing from requirements.txt fail, please run:**
+### Windows
+
+```powershell
+pyton -m venv venv
+.\venv\Scripts\activate.bat
+pip install -r requirements.txt
+```
+
+### In case installing from requirements.txt fail, please run:
 
 ```bash
 pip install keras scikit-learn numpy pandas tensorflow==2.13 prophet networkx==3.1 requests==2.31.0 folium==0.14.0 fastapi pydantic-core pydantic xlrd uvicorn tk gdown
