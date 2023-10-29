@@ -5,7 +5,8 @@ Traffic Flow Prediction with Neural Networks(SAEs、LSTM、GRU, CNN, Prophet).
 This is the project for our unit COS30018 to upgrade the original repo: [xiaochus/TrafficFlowPrediction](https://github.com/xiaochus/TrafficFlowPrediction).
 
 ## Requirement
-- Python 3.11
+
+- python 3.11
 - Tensorflow-gpu 2.13.0
 - Keras 2.13.1
 - scikit-learn 1.3.1
@@ -13,6 +14,7 @@ This is the project for our unit COS30018 to upgrade the original repo: [xiaochu
 - requests 2.31.0
 - folium 0.14.0
 - tk 0.1.0
+- fastapi 0.103.2
 
 Please use the requirements.txt file to setup the environment.
 
@@ -24,16 +26,23 @@ source ./venv/bin/activate
 pip install -r requirements.txt
 ```
 
+**In case installing from requirements.txt fail, please run:**
+
+```bash
+pip install keras scikit-learn numpy pandas tensorflow==2.13 prophet networkx==3.1 requests==2.31.0 folium==0.14.0 fastapi pydantic-core pydantic xlrd uvicorn tk gdown
+```
+
 ## Train the model
 
 **Run command below to train the model:**
 
-```
-python train.py --model model_name
+```bash
+python train.py --model model_name --epoch 1800
 ```
 
 You can choose "lstm", "gru", "saes", "cnn" or "prophet" as arguments. The ```.h5``` weight file was saved at model folder. For prophet model, there will be a json file in the model folder.
 
+We are training with epoch 1800 on Google Colab, please use smaller epoch like 30 to test the program on your local machine instead of fully train them.
 
 ## Experiment
 
