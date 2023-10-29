@@ -39,7 +39,7 @@ pip install -r requirements.txt
 ### In case installing from requirements.txt fail, please run:
 
 ```bash
-pip install keras scikit-learn numpy pandas tensorflow==2.13 prophet networkx==3.1 requests==2.31.0 folium==0.14.0 fastapi pydantic-core pydantic xlrd uvicorn tk gdown
+pip install keras scikit-learn numpy pandas tensorflow==2.13 prophet networkx==3.1 requests==2.31.0 folium==0.14.0 fastapi pydantic-core pydantic xlrd uvicorn tk gdown pydot graphviz
 ```
 
 ## Train the model
@@ -53,6 +53,12 @@ python train.py --model model_name --epoch 1800
 You can choose "lstm", "gru", "saes", "cnn" or "prophet" as arguments. The ```.h5``` weight file was saved at model folder. For prophet model, there will be a json file in the model folder.
 
 We are training with epoch 1800 on Google Colab, please use smaller epoch like 30 to test the program on your local machine instead of fully train them.
+
+**You can also get all the models we trained on Google Colab by running:**
+
+```bash
+pyton model/download.py
+```
 
 ## Experiment
 
